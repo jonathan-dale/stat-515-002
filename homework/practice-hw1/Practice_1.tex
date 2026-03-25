@@ -1,0 +1,469 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Practice Assignment},
+  pdfauthor={Jonathan Dale},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Practice Assignment}
+\author{Jonathan Dale}
+\date{2026-02-09}
+
+\begin{document}
+\maketitle
+
+\textbf{Instructions:} Create a \textbf{\emph{pdf}} file with all
+relevant code and outputs using \textbf{Rmarkdown}. Do not submit any
+other file formats and do not print the entire dataset with the answers.
+\emph{ONLY include relevant outputs.}
+
+\subsubsection{Q1) Use the `carseats.csv' for the data set. Read the
+description of the dataset and answer the following
+questions.}\label{q1-use-the-carseats.csv-for-the-data-set.-read-the-description-of-the-dataset-and-answer-the-following-questions.}
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\tightlist
+\item
+  Import the ``carseats'' dataset, look at the first few rows and
+  inspect the data types of the variables in the dataframe.
+\item
+  Change the variables ``ShelveLoc, urban, US'' into a factor variables.
+\item
+  create a new variable called ``profit'' which stands for ``Income -
+  Advertising''
+\item
+  Check for missing data. If you have missing data remove the
+  corresponding rows from the dataset.
+\item
+  How many ``Good'' shelving locations are there in the dataset?
+\item
+  How many stores are inside the USA? create a separate data frame
+  containing all stores from USA. Name the data set as ``stores\_USA''
+\item
+  create another data set called ``HighUrban\_USSales'' using
+  `stores\_USA' data set. Where, sales are greater than 7 thousand and
+  stores are located in Urban areas.
+\item
+  Remove ``US'' and ``Urban'' columns from the ``HighUrban\_USSales''
+  dataset.
+\item
+  For one the above subset, write to a new CSV file
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(readr)}
+\DocumentationTok{\#\# a) Import the "carseats" dataset, look at the first few rows and inspect the data types of the variables in the dataframe}
+\NormalTok{carseats\_1 }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\StringTok{"\textasciitilde{}/STATS/STAT{-}515{-}002/homework/hw{-}1/carseats{-}1.csv"}\NormalTok{)}
+\FunctionTok{str}\NormalTok{(carseats\_1)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 'data.frame':    400 obs. of  11 variables:
+##  $ Sales      : num  9.5 11.22 10.06 7.4 4.15 ...
+##  $ CompPrice  : int  138 111 113 117 141 124 115 136 132 132 ...
+##  $ Income     : int  73 48 35 100 64 113 105 81 110 113 ...
+##  $ Advertising: int  11 16 10 4 3 13 0 15 0 0 ...
+##  $ Population : int  276 260 269 466 340 501 45 425 108 131 ...
+##  $ Price      : int  120 83 80 97 128 72 108 120 124 124 ...
+##  $ ShelveLoc  : chr  "Bad" "Good" "Medium" "Medium" ...
+##  $ Age        : int  42 65 59 55 38 78 71 67 76 76 ...
+##  $ Education  : int  17 10 12 14 13 16 15 10 10 17 ...
+##  $ Urban      : chr  "Yes" "Yes" "Yes" "Yes" ...
+##  $ US         : chr  "Yes" "Yes" "Yes" "Yes" ...
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{head}\NormalTok{(carseats\_1)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   Sales CompPrice Income Advertising Population Price ShelveLoc Age Education
+## 1  9.50       138     73          11        276   120       Bad  42        17
+## 2 11.22       111     48          16        260    83      Good  65        10
+## 3 10.06       113     35          10        269    80    Medium  59        12
+## 4  7.40       117    100           4        466    97    Medium  55        14
+## 5  4.15       141     64           3        340   128       Bad  38        13
+## 6 10.81       124    113          13        501    72       Bad  78        16
+##   Urban  US
+## 1   Yes Yes
+## 2   Yes Yes
+## 3   Yes Yes
+## 4   Yes Yes
+## 5   Yes  No
+## 6    No Yes
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\DocumentationTok{\#\# b)  Change the variables "ShelveLoc, urban, US" into a factor variables.}
+
+    \CommentTok{\# View the structure first}
+  \FunctionTok{str}\NormalTok{(carseats\_1)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 'data.frame':    400 obs. of  11 variables:
+##  $ Sales      : num  9.5 11.22 10.06 7.4 4.15 ...
+##  $ CompPrice  : int  138 111 113 117 141 124 115 136 132 132 ...
+##  $ Income     : int  73 48 35 100 64 113 105 81 110 113 ...
+##  $ Advertising: int  11 16 10 4 3 13 0 15 0 0 ...
+##  $ Population : int  276 260 269 466 340 501 45 425 108 131 ...
+##  $ Price      : int  120 83 80 97 128 72 108 120 124 124 ...
+##  $ ShelveLoc  : chr  "Bad" "Good" "Medium" "Medium" ...
+##  $ Age        : int  42 65 59 55 38 78 71 67 76 76 ...
+##  $ Education  : int  17 10 12 14 13 16 15 10 10 17 ...
+##  $ Urban      : chr  "Yes" "Yes" "Yes" "Yes" ...
+##  $ US         : chr  "Yes" "Yes" "Yes" "Yes" ...
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+    \CommentTok{\# Adjust the variables, convert into factor variable type}
+\NormalTok{  carseats\_1}\SpecialCharTok{$}\NormalTok{ShelveLoc }\OtherTok{=} \FunctionTok{factor}\NormalTok{(carseats\_1}\SpecialCharTok{$}\NormalTok{ShelveLoc)}
+\NormalTok{  carseats\_1}\SpecialCharTok{$}\NormalTok{Urban }\OtherTok{=} \FunctionTok{factor}\NormalTok{(carseats\_1}\SpecialCharTok{$}\NormalTok{Urban)}
+\NormalTok{  carseats\_1}\SpecialCharTok{$}\NormalTok{US }\OtherTok{=} \FunctionTok{factor}\NormalTok{(carseats\_1}\SpecialCharTok{$}\NormalTok{US)}
+    \CommentTok{\# Verify that the variables were converted into factor variables}
+  \FunctionTok{str}\NormalTok{(carseats\_1)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 'data.frame':    400 obs. of  11 variables:
+##  $ Sales      : num  9.5 11.22 10.06 7.4 4.15 ...
+##  $ CompPrice  : int  138 111 113 117 141 124 115 136 132 132 ...
+##  $ Income     : int  73 48 35 100 64 113 105 81 110 113 ...
+##  $ Advertising: int  11 16 10 4 3 13 0 15 0 0 ...
+##  $ Population : int  276 260 269 466 340 501 45 425 108 131 ...
+##  $ Price      : int  120 83 80 97 128 72 108 120 124 124 ...
+##  $ ShelveLoc  : Factor w/ 4 levels "","Bad","Good",..: 2 3 4 4 2 2 4 3 4 4 ...
+##  $ Age        : int  42 65 59 55 38 78 71 67 76 76 ...
+##  $ Education  : int  17 10 12 14 13 16 15 10 10 17 ...
+##  $ Urban      : Factor w/ 3 levels "","No","Yes": 3 3 3 3 3 2 3 3 2 2 ...
+##  $ US         : Factor w/ 2 levels "No","Yes": 2 2 2 2 1 2 1 2 1 2 ...
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# c)  create a new variable called "profit" which stands for "Income {-} Advertising"}
+  
+    \CommentTok{\# Create the new variable}
+\NormalTok{  profit }\OtherTok{=}\NormalTok{ carseats\_1}\SpecialCharTok{$}\NormalTok{Income }\SpecialCharTok{{-}}\NormalTok{ carseats\_1}\SpecialCharTok{$}\NormalTok{Advertising}
+    \CommentTok{\# Then add the new variable to the data set}
+\NormalTok{  carseats\_1}\SpecialCharTok{$}\NormalTok{profit }\OtherTok{=}\NormalTok{ profit}
+    \CommentTok{\# verify}
+  \FunctionTok{str}\NormalTok{(carseats\_1)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 'data.frame':    400 obs. of  12 variables:
+##  $ Sales      : num  9.5 11.22 10.06 7.4 4.15 ...
+##  $ CompPrice  : int  138 111 113 117 141 124 115 136 132 132 ...
+##  $ Income     : int  73 48 35 100 64 113 105 81 110 113 ...
+##  $ Advertising: int  11 16 10 4 3 13 0 15 0 0 ...
+##  $ Population : int  276 260 269 466 340 501 45 425 108 131 ...
+##  $ Price      : int  120 83 80 97 128 72 108 120 124 124 ...
+##  $ ShelveLoc  : Factor w/ 4 levels "","Bad","Good",..: 2 3 4 4 2 2 4 3 4 4 ...
+##  $ Age        : int  42 65 59 55 38 78 71 67 76 76 ...
+##  $ Education  : int  17 10 12 14 13 16 15 10 10 17 ...
+##  $ Urban      : Factor w/ 3 levels "","No","Yes": 3 3 3 3 3 2 3 3 2 2 ...
+##  $ US         : Factor w/ 2 levels "No","Yes": 2 2 2 2 1 2 1 2 1 2 ...
+##  $ profit     : int  62 32 25 96 61 100 105 66 110 113 ...
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# d)  Check for missing data. If you have missing data remove the corresponding rows from the dataset.}
+  
+    \CommentTok{\# Do we have missing data?}
+  \FunctionTok{table}\NormalTok{(}\FunctionTok{is.na}\NormalTok{(carseats\_1)) }\DocumentationTok{\#\# Yes we have missing data!}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## FALSE  TRUE 
+##  4797     3
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+    \CommentTok{\# Create new dataset by removing the missing values from the original.}
+\NormalTok{  carseats\_clean }\OtherTok{=} \FunctionTok{na.omit}\NormalTok{(carseats\_1)}
+
+
+\CommentTok{\# e)  How many "Good" shelving locations are there in the dataset?}
+    
+    \CommentTok{\# Take a subset with only the ShelveLoc = "Good"}
+\NormalTok{  Good\_location }\OtherTok{=} \FunctionTok{subset}\NormalTok{(carseats\_1, ShelveLoc }\SpecialCharTok{==} \StringTok{"Good"}\NormalTok{)}
+    \CommentTok{\# Use nrow() to count the new subset}
+  \FunctionTok{nrow}\NormalTok{(Good\_location)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 85
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+    \CommentTok{\# Alternatively, just apply a filter and wrap with the nrow() function.}
+  \FunctionTok{nrow}\NormalTok{(}\FunctionTok{subset}\NormalTok{(carseats\_1, ShelveLoc }\SpecialCharTok{==} \StringTok{"Good"}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 85
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# f)  How many stores are inside the USA? create a separate data frame containing all stores from USA. Name the data set as "stores\_USA"}
+
+    \CommentTok{\# Create new dataframe as a subset of original}
+\NormalTok{  stores\_USA }\OtherTok{=} \FunctionTok{subset}\NormalTok{(carseats\_1, US }\SpecialCharTok{==} \StringTok{"Yes"}\NormalTok{)}
+    \CommentTok{\# use nrow() function to count rows of the subset where US == "Yes"}
+  \FunctionTok{nrow}\NormalTok{(stores\_USA)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 258
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# g)  create another data set called "HighUrban\_USSales" using \textquotesingle{}stores\_USA\textquotesingle{} data set. Where, sales are greater than 7 thousand and stores are located in Urban areas.}
+  
+    \CommentTok{\# Create new data frame}
+\NormalTok{  HighUrban\_USSales }\OtherTok{=} \FunctionTok{subset}\NormalTok{(stores\_USA, Sales }\SpecialCharTok{\textgreater{}} \DecValTok{7} \SpecialCharTok{\&}\NormalTok{ Urban }\SpecialCharTok{==} \StringTok{"Yes"}\NormalTok{)}
+  
+
+\CommentTok{\# h)  Remove "US" and "Urban" columns from the "HighUrban\_USSales" dataset.}
+  
+    \CommentTok{\# Check the original structure, remove the columns, verify  }
+  \FunctionTok{str}\NormalTok{(HighUrban\_USSales)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 'data.frame':    104 obs. of  12 variables:
+##  $ Sales      : num  9.5 11.2 10.1 7.4 11.8 ...
+##  $ CompPrice  : int  138 111 113 117 136 117 115 107 147 129 ...
+##  $ Income     : int  73 48 35 100 81 94 28 117 74 76 ...
+##  $ Advertising: int  11 16 10 4 15 4 11 11 13 16 ...
+##  $ Population : int  276 260 269 466 425 503 29 148 251 58 ...
+##  $ Price      : int  120 83 80 97 120 94 86 118 131 121 ...
+##  $ ShelveLoc  : Factor w/ 4 levels "","Bad","Good",..: 2 3 4 4 3 3 3 3 3 4 ...
+##  $ Age        : int  42 65 59 55 67 50 53 52 52 69 ...
+##  $ Education  : int  17 10 12 14 10 13 18 18 10 12 ...
+##  $ Urban      : Factor w/ 3 levels "","No","Yes": 3 3 3 3 3 3 3 3 3 3 ...
+##  $ US         : Factor w/ 2 levels "No","Yes": 2 2 2 2 2 2 2 2 2 2 ...
+##  $ profit     : int  62 32 25 96 66 90 17 106 61 60 ...
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{  HighUrban\_USSales }\OtherTok{=} \FunctionTok{subset}\NormalTok{(HighUrban\_USSales, }\AttributeTok{select =} \SpecialCharTok{{-}}\FunctionTok{c}\NormalTok{(US, Urban))}
+  \FunctionTok{str}\NormalTok{(HighUrban\_USSales)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 'data.frame':    104 obs. of  10 variables:
+##  $ Sales      : num  9.5 11.2 10.1 7.4 11.8 ...
+##  $ CompPrice  : int  138 111 113 117 136 117 115 107 147 129 ...
+##  $ Income     : int  73 48 35 100 81 94 28 117 74 76 ...
+##  $ Advertising: int  11 16 10 4 15 4 11 11 13 16 ...
+##  $ Population : int  276 260 269 466 425 503 29 148 251 58 ...
+##  $ Price      : int  120 83 80 97 120 94 86 118 131 121 ...
+##  $ ShelveLoc  : Factor w/ 4 levels "","Bad","Good",..: 2 3 4 4 3 3 3 3 3 4 ...
+##  $ Age        : int  42 65 59 55 67 50 53 52 52 69 ...
+##  $ Education  : int  17 10 12 14 10 13 18 18 10 12 ...
+##  $ profit     : int  62 32 25 96 66 90 17 106 61 60 ...
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# i)  For one the above subset, write to a new CSV file}
+    \DocumentationTok{\#\# Write to file removing the row column}
+  \FunctionTok{write.csv}\NormalTok{(HighUrban\_USSales, }\StringTok{"HighUrban\_USSales.csv"}\NormalTok{, }\AttributeTok{row.names =}\NormalTok{ F)}
+\end{Highlighting}
+\end{Shaded}
+
+\subsubsection{Q2) See the following code of a function and explain what
+it does. Suggest a suitable name for the function and rename.
+Demonstrate how the function works when you have numerical data and
+character
+data.}\label{q2-see-the-following-code-of-a-function-and-explain-what-it-does.-suggest-a-suitable-name-for-the-function-and-rename.-demonstrate-how-the-function-works-when-you-have-numerical-data-and-character-data.}
+
+The code below defines a function named `function1' that takes a single
+argument x. If the vector, x, has length 1 or less, the function returns
+NULL. If length greater than 1, the function returns a new vector with
+all the elements except the last one. I would re-name this to
+remove\_last\_element() to better describe what it dose.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{function1 }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(x) \{}
+  \ControlFlowTok{if}\NormalTok{ (}\FunctionTok{length}\NormalTok{(x) }\SpecialCharTok{\textless{}=} \DecValTok{1}\NormalTok{) }\FunctionTok{return}\NormalTok{(}\ConstantTok{NULL}\NormalTok{)}
+\NormalTok{  x[}\SpecialCharTok{{-}}\FunctionTok{length}\NormalTok{(x)]}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\subsubsection{Q3) Write a function to compute the sample variance of a
+numerical vector. Use the equation of the variance to write the
+function.}\label{q3-write-a-function-to-compute-the-sample-variance-of-a-numerical-vector.-use-the-equation-of-the-variance-to-write-the-function.}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{sample\_variance }\OtherTok{=} \ControlFlowTok{function}\NormalTok{(x) \{}
+  \CommentTok{\# Validate the input}
+  \ControlFlowTok{if}\NormalTok{ (}\SpecialCharTok{!} \FunctionTok{is.numeric}\NormalTok{(x)) \{}
+    \FunctionTok{stop}\NormalTok{(}\StringTok{"Must be numeric vector"}\NormalTok{)}
+\NormalTok{  \}}
+  \ControlFlowTok{if}\NormalTok{ (}\FunctionTok{length}\NormalTok{(x) }\SpecialCharTok{\textless{}} \DecValTok{2}\NormalTok{) \{}
+    \FunctionTok{stop}\NormalTok{(}\StringTok{"Input vector must have at least 2 elements to compute sample variance."}\NormalTok{)}
+\NormalTok{  \}}
+  \CommentTok{\# Input validation sources from Google AI overview.}
+  
+  \CommentTok{\# Calculate number of observations, mean, sum of squared differences, and variance}
+\NormalTok{  n }\OtherTok{\textless{}{-}} \FunctionTok{length}\NormalTok{(x)}
+\NormalTok{  xbar }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(x, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+\NormalTok{  sum\_sq\_diff }\OtherTok{=} \FunctionTok{sum}\NormalTok{((x }\SpecialCharTok{{-}}\NormalTok{ xbar)}\SpecialCharTok{\^{}}\DecValTok{2}\NormalTok{)}
+\NormalTok{  sample\_variance }\OtherTok{=}\NormalTok{ sum\_sq\_diff }\SpecialCharTok{/}\NormalTok{ (n }\SpecialCharTok{{-}}\DecValTok{1}\NormalTok{)}
+  \FunctionTok{return}\NormalTok{(sample\_variance)}
+\NormalTok{\}}
+
+
+\NormalTok{my\_sample\_vector }\OtherTok{=} \FunctionTok{c}\NormalTok{(}\DecValTok{10}\NormalTok{, }\DecValTok{12}\NormalTok{, }\DecValTok{15}\NormalTok{, }\DecValTok{11}\NormalTok{, }\DecValTok{14}\NormalTok{, }\DecValTok{13}\NormalTok{) }\CommentTok{\# Create a sample vector}
+\NormalTok{my\_sample\_variance\_function\_call }\OtherTok{=} \FunctionTok{sample\_variance}\NormalTok{(my\_sample\_vector) }\CommentTok{\# Call the function, store results in variable}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Manual variance function:"}\NormalTok{, my\_sample\_variance\_function\_call, }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{ )}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Manual variance function: 3.5
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\DocumentationTok{\#\# Lets verify the results with the built in function...}
+\NormalTok{built\_in\_sample\_variance }\OtherTok{=} \FunctionTok{var}\NormalTok{(my\_sample\_vector)}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Built in sample variance var():"}\NormalTok{, built\_in\_sample\_variance, }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Built in sample variance var(): 3.5
+\end{verbatim}
+
+\end{document}

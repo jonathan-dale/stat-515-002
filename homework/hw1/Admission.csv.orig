@@ -1,0 +1,5 @@
+Gender,Admit,Freq,Prop
+Male,Admitted,1158,0.675
+Female,Admitted,557,0.324
+Male,Rejected,1493,0.539
+Female,Rejected,1278,0.461

@@ -1,0 +1,45 @@
+
+
+leaflet(data_set) %>%
+    setView(lng = some_value, lat = some_value, zoom = 3.3) %>%
+    addTiles() %>%
+    addPolygons(fillColor = ~pal2(br_mun$density)),
+    fillOpacity = .5
+
+
+
+So the leaflet() is the base object we use in this class. Then it can layer a lot of things using data sets
+and other objects that can be layered into the leaflets.
+- using open streat maps as the base.
+- creates interactive maps
+- 
+
+
+
+WEBSITE.
+use this as an example: 
+https://github.com/jfrench/jfrench.github.io/tree/main
+
+git remote add origin git@github.com:jonathan-dale/stat-515.git
+git branch -M main
+git add --all
+git commit -m 'initial commit'
+
+
+#########################################################
+# make sure everything is tracked & committed locally
+git init
+git add --all
+git commit -m "Initial commit of quarto site"
+
+
+git remote add origin git@github.com:jonathan-dale/stat-515.git
+# or use the HTTPS form:
+# git remote add origin https://github.com/jonathan-dale/stat-515.git
+
+# set the branch name to main if it isn’t already
+git branch -M main
+
+# push the local main branch to GitHub
+git push -u origin main
+#########################################################

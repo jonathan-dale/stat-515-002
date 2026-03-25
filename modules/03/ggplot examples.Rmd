@@ -1,0 +1,695 @@
+---
+title: 'Introduction to "ggplot2"'
+author: "Dr. Isuru Dassanayake"
+output: rmdformats::robobook
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+```
+
+You can find more details on `ggplot2` here:
+
+-   <https://ggplot2.tidyverse.org/reference/>
+
+-   <http://www.sthda.com/english/wiki/ggplot2-point-shapes>
+
+# Installation
+
+You only need to install packages just once.
+
+-   The easiest way to get ggplot2 is to install the whole tidyverse: `install.packages("tidyverse")`
+
+-   Alternatively, install just ggplot2: `install.packages("ggplot2")`
+
+## Loading packages and source files
+
+once you install packages, load your packages using `library(ggplot2)`.
+
+Instructor provided theme file is named "hw.R" and can load the source file using `source("path name/hw.R")`
+
+# Old faithful geyser Dataset
+
+For this example we will use "Old faithful" data set from `MASS` package.
+
+You can find the data description by using following links or by executing `?faithful` (After loading up the `MASS` library)
+
+-   <https://en.wikipedia.org/wiki/Old_Faithful>
+
+-   <https://www.livescience.com/4957-secret-faithful-revealed.html>
+
+-   <https://www.livescience.com/28699-old-faithful-hidden-cavern.html>
+
+## Preiminary Analysis
+
+First let's look at the data set
+
+```{r message=FALSE, warning=FALSE}
+library(MASS)
+
+data("faithful")
+head(faithful)
+str(faithful)
+```
+
+Here we see the eruption duration and the wait time to the next eruption are measured in minutes. Knowing a variable's units of measure is often important for analysis, interpretation of results and communication. Below we will put the units of measure in the plots.
+
+### Check for missing values:
+
+```{r}
+table(is.na(faithful))
+```
+
+There are no missing values to be found.
+
+### Getting descriptive statistics:
+
+We can get descriptive statistics for variables in data.frames and other data structures
+
+```{r}
+summary(faithful)
+```
+
+## Scatter plots using ggplot2
+
+A scatter plot (also called a scatterplot, scatter graph, scatter chart, scattergram, or scatter diagram) is a type of plot or mathematical diagram using Cartesian coordinates to display values for typically two variables for a set of data. If the points are coded (color/shape/size), additional variables can be displayed. The data are displayed as a collection of points, each having the value of one variable determining the position on the horizontal axis and the value of the other variable determining the position on the vertical axis.
+
+```{r message=FALSE, warning=FALSE}
+# 'tidyverse' is an opinionated collection of R packages 
+# designed for data science including ggplot2
+library(tidyverse) 
+
+ggplot(faithful, aes(x = waiting, y = eruptions)) +
+  geom_point()
+
+```
+
+**Interesting Facts:**
+
+-   The ggplot() function development followed the design and terminology described in Leland Wilkinson's illuminating book, "The Grammar of Graphics".
+
+-   In the book, the term aesthetics refers to the Greek word that means perception. In the syntax above,the aes() function pairs aesthetic key words to data.frame/tibble variables.
+
+-   The most commonly used aesthetics are x and y position, size, shape, fill and color. ggplot uses these aesthetics when rendering geometric objects that we can see.
+
+-   Functions with prefix `geom_` specify geometric objects. Three examples are geom_point(), geom_line(), and geom_polygon().
+
+Let's use geom function arguments to change aesthetic constants. Below the points are filled with Blue and has a Black outline.
+
+```{r}
+ggplot(faithful,aes(x=waiting,y=eruptions)) +
+  geom_point(shape =21 ,fill ="blue",size =3.7,colour ="black")
+
+```
+
+The x and y aesthetics specified in the ggplot() function were passed to the geom_point function.
+
+**Notes:**
+
+-   There is no default "geom\_" function.
+
+-   We can add multiple geom layers to a plot using "+"
+
+-   Each geom function can have it own tibble or data.frame, aes() function that pairs aesthetics with tibble or data frame variables, and aesthetic key words paired with constants.
+
+### Adding a smooth of form *y = f(x)+ e* to suggest a possible functional relationship in the presence of noise, *e*.
+
+*"Loess regression" is a nonparametric technique that uses local weighted regression to fit a smooth curve through points in a scatter plot.*
+
+```{r message=FALSE, warning=FALSE}
+ggplot(faithful,aes(x=waiting,y=eruptions)) +
+  geom_point() +
+  geom_smooth(method ="loess")
+```
+
+We can choose other data fitting methods. *Below "lm", specifies a linear regression model.*
+
+```{r message=FALSE, warning=FALSE}
+ggplot(faithful,aes(x=waiting,y=eruptions)) +
+  geom_point() +
+  geom_smooth(method ="lm")
+```
+
+### What if we changed the order of the layers??
+
+```{r}
+ggplot(faithful,aes(x=waiting,y=eruptions)) + 
+  geom_smooth(method=lm, color="red",linewidth=1.1) + geom_point()
+```
+
+Now black points appear on top of the red line.
+
+## Plot labeling
+
+In this class, graphics are to include variable names and the units of measure. The units of measure may appear in variable labels or perhaps in the title. When the graphics are in the class project report, the labeling can appear in figure caption.
+
+Let's create labels as follows:
+
+-   Let X-axis be the Waiting Time Between Eruptions in Minutes.
+
+-   Let Y-axis be the Eruption Duration in Minutes.
+
+-   Let the title be Old Faithful Geyser Eruptions.
+
+```{r message=FALSE, warning=FALSE}
+ggplot(faithful,aes(x=waiting,y=eruptions)) +
+  geom_point(shape=21, size=2, fill="green", color="black")+
+  geom_smooth(method=loess, linewidth=1.2)  +
+  labs(title = "Old Faithful Geyser Eruptions",
+       x="Waiting Time Between Eruptions in Minutes",
+       y="Eruption Duration in Minutes")
+```
+
+Plotting space constraints may motive the use of shorter labels. We might use abbreviations such "min." for minutes. For a long text string another option is to use two lines. The text `\n` in a character string signals the start a new line of text.
+
+Note the x-axis label in the example below.
+
+```{r}
+ggplot(faithful,aes(x=waiting,y=eruptions)) +
+  geom_point(shape=21, size=2.,fill="green",color="black")+
+  geom_smooth(method=loess,linewidth=1.2, span=.6)+
+  labs(x="Waiting Time Between Eruptions \n In Minutes",
+       y="Eruption Duration in Minutes",
+       title="Old Faithful Geyser Eruptions")
+```
+
+If both variables are in the same units, the units might be specified in the title.
+
+## Themes that control plot appearance
+
+We will use the theme "hw" during this class.
+
+Following is the description about the theme and reasoning behind choices that were made according to the author of the theme, Dr. Daniel Carr,in his own words:
+
+***"There are many theme functions that control plot that appearance such as plot fill color and grid lines. The default theme, theme_gray, I provides a light gray fill and white grid lines at two scales of resolution.***
+
+***I have long advocated using a gray fill to increase the plot presence on page. Adding a dark gray outline lifts the plot off the page and gives presence as an entity. The White grid lines have low contrast when plotted on a light gray background. They appear in the background while supporting higher perception accuracy extraction for the location of symbols plotted on top.***
+
+***The `hw.R` script read in earlier includes the default theme_gray function but modifies some of its default argument. It outlines the plot with dark gray line, centers the title, removes the superfluous tick marks, recovers tick mark wasted space, and removes the secondary grid lines,***
+
+***Previously the high contrast black ticks marks and axis labels pushed the plot without an outline into the background. The white grid lines running into page glued it the plot to page.***
+
+***Recently the plot title default location was changed in theme_gray to be at the top left of the plot panel rather than at the top center. The English reading convention is left to right and then top down. Those with this convention may well look first at the top left first. A can be made for this change. However I am used to more symmetry in title, so I re-centered the title."***
+
+This is the source file of the theme `hw.R`, that will be used in class.
+
+```{r}
+hw <- theme_gray()+ theme(
+  plot.title=element_text(hjust=0.5),
+  plot.subtitle=element_text(hjust=0.5),
+  plot.caption=element_text(hjust=-.5),
+
+  strip.text.y = element_blank(),
+  strip.background=element_rect(fill=rgb(.9,.95,1),
+    colour=gray(.5), linewidth =.2),
+
+  panel.border=element_rect(fill=FALSE,colour=gray(.70)),
+  panel.grid.minor.y = element_blank(),
+  panel.grid.minor.x = element_blank(),
+  panel.spacing.x = unit(0.10,"cm"),
+  panel.spacing.y = unit(0.05,"cm"),
+
+# axis.ticks.y= element_blank()
+  axis.ticks=element_blank(),
+  axis.text=element_text(colour="black"),
+  axis.text.y=element_text(margin=margin(0,3,0,3)),
+  axis.text.x=element_text(margin=margin(-1,0,3,0))
+)
+```
+
+```{r}
+ggplot(faithful,aes(x=waiting,y=eruptions)) +
+  geom_point(shape=21, size=2, fill="green", color="black")+
+  geom_smooth(method=loess, linewidth=1.2, span=.6) +
+  labs(x="Waiting Time Between Eruptions in Minutes",
+       y="Eruption Duration in Minutes",
+       title="Old Faithful Geyser Eruptions") + hw
+```
+
+## Histogram Vs. Kernel Density plots
+
+Many people are familiar with histograms and they can be useful for communication purposes.
+
+A **histogram** is a graph used to represent the frequency distribution of a few data points of one variable. Histograms often classify data into various "bins" or "range groups" and count how many data points belong to each of those bins.
+
+```{r}
+ggplot(faithful,aes(x=waiting)) +
+  geom_histogram()+
+  labs(x="Waiting Time Between Eruptions In Minutes",
+       y="Count",
+       title="Old Faithful Geyser Eruptions") + hw
+
+```
+
+We can control the `binwidth`, the rectangle fill color and the line color.
+
+```{r}
+ggplot(faithful,aes(x=waiting)) +
+  geom_histogram(binwidth=2,
+                 fill="cornsilk",color="black")+
+  labs(x="Waiting Time Between Eruptions In Minutes",
+       y="Counts",
+       title="Old Faithful Geyser Eruptions")+hw
+```
+
+Histograms typically encode one of three different quantities on the y axis: counts, percent of total count, or data density.
+
+ggplot syntax below specifies using relative frequency for the y axis.
+
+```{r}
+ggplot(faithful,aes(x=waiting, y = after_stat(count)/sum(after_stat(count)))) +
+  geom_histogram(binwidth=2,
+                 fill="cornsilk",color="black")+
+  labs(x="Waiting Time Between Eruptions In Minutes",
+       y="Relative Frequencies",
+       title="Old Faithful Geyser Eruptions")+hw
+```
+
+ggplot syntax below specifies using density for the y axis. This enables comparison with a superposed kernel density estimate.
+
+### Saving Plots
+
+We can save a graphic object, plot it and access it by name, change specification and a plot layers.
+
+```{r}
+histPlot <- ggplot(faithful,aes(x=waiting,y = after_stat(density))) +
+  geom_histogram(binwidth=2,
+                 fill="cornsilk",color="black")+
+  labs(x="Waiting Time Between Eruptions In Minutes",
+       y="Density",
+       title="Old Faithful Geyser Eruptions") + hw
+
+```
+
+A **kernel density plot** is a form of a graph that uses a single continuous curve to show the distribution of values in a data set. A kernel density plot is similar to a histogram, but it is better at depicting the shape of distribution because the number of bins used in the histogram has no effect on it.
+
+### Frequency Polygon
+
+Before for superposing a density curve, we superpose scaled frequency polygon which is similar to a density plot. Some statistic reasons some consider frequency polygons to be better density estimates than histogram estimate.
+
+```{r}
+histPlot+ geom_freqpoly(binwidth=2,color="red",linewidth=1.2)
+```
+
+Now adding a computed kernel density, extend the x axis and plot
+
+```{r}
+histPlot+ geom_line(stat="density",color="blue",linewidth=1.2)+
+  xlim(33,104)
+```
+
+Above we superpose a density curve using geom_line and extend the plot limits because the kernel density estimates are positive over a larger interval than the data minimum and maximum. Yes, the extension can be obviously wrong when tails go outside the limits of possible values.
+
+Below, we fill the area under the density curve. The `alpha` argument controls fill transparency The alpha argument can have values ranging from **0 to 1** with 0 being completely transparent.
+
+```{r}
+histPlot +
+  geom_density(adjust=.8,fill="cyan",color="black",alpha=0.4)+
+  xlim(35,102)
+```
+
+We still need to settle on kernel smoothing parameter It is controlled above by `adjust=.4`. Decades ago we used our opinion and picked between densities that looked too rough and too smooth. Today, cross validation algorithms can often suffice. More knowledge about the data, the task and the audience might guide us toward a different choices. Knowledge may be indicate there is more real structure than suggest by peaks and valley of the sample at hand.
+
+# Diamonds Dataset
+
+For this example we will use the "Diamonds" data set from `ggplot2` library. You can get more information about the data set by by using `?diamonds`.
+
+First let's look at the data set.
+
+```{r}
+data(diamonds)
+str(diamonds)
+```
+
+Here, we can observe that there are 3 variables that are 'Ordinal Factors'. All the rest are a mixture of numerical and integer variables.
+
+## Using bar height to encode factors level counts
+
+### Diamond 'color' as a factor
+
+To show the levels of the diamond color on the x-axis we can use geom_bar to show the counts for the levels
+
+```{r}
+ggplot(diamonds , aes( x = color) ) +
+  geom_bar() +
+  labs(x="Diamond Color Classes",
+       y="Count",
+       title="Diamond Data Set")+ hw
+```
+
+Let's try to add colors to the bars.
+
+```{r}
+ggplot(diamonds , aes( x = color) ) +
+  geom_bar(fill="cornsilk",color='black') +
+  labs(x="Diamond Color Classes",
+       y="Count",
+       title="Diamond Data Set")+ hw
+```
+
+Also use the diamond "color" factor to control the bar fill color. This example used default fill colors.
+
+```{r}
+ggplot(diamonds , aes( x=color, fill=color))+ geom_bar() + hw
+```
+
+or we can use the following use the following syntax to achieve the same results.
+
+```{r eval=FALSE}
+ggplot(diamonds , aes( x=color))+ geom_bar(aes(fill=color)) + hw
+```
+
+Let's try to implement the following changes to the plot:
+
+-   Make the bar outline 'black'.
+
+-   Provide X-axis, Y-axis and title labels.
+
+-   Remove the redundant legend.
+
+```{r}
+ggplot(diamonds, aes(x=color, fill=color))+
+  geom_bar(color="black") +        # black outline
+  labs(x="Diamond Color Classes",
+       y="Count",
+       title="Diamond Data Set")+ hw +
+  theme(legend.position="none")
+```
+
+**Exercise:**
+
+Modify the previous script and produce the plot using the diamond factor "cut" rather than the factor color. (There are three place to make changes, Don't forget the label).
+
+**Answer:**
+
+```{r}
+ggplot(diamonds, aes(x=cut, fill=cut))+
+  geom_bar(color="black") +        # black outline
+  labs(x="Diamond Cut Classes",
+       y="Count",
+       title="Diamond Data Set")+ hw +
+  theme(legend.position="none")
+
+```
+
+## Stacked Bar Plots
+
+A **stacked chart** is a form of bar chart that shows the composition and comparison of a few variables, either relative or absolute, over time. Also called a stacked bar or column chart, they look like a series of columns or bars that are stacked on top of each other.
+
+```{r}
+ggplot(diamonds, aes( x=color, fill=cut) )+
+  geom_bar(color="black") +
+  labs(x="Diamond Color Classes",
+       y="Count",
+       title="Diamond Data Set",
+       fill="Cut") + hw
+```
+
+Also, you can change the order of the variables in the above plot and re-create similar plot as follows:
+
+```{r}
+ggplot(diamonds, aes( x=cut, fill=color) )+
+  geom_bar(color="black") +
+  labs(x="Diamond Cut Classes",
+       y="Count",
+       title="Diamond Data Set",
+       fill="Color") + hw
+```
+
+**Question:** Which plot would you choose?
+
+## Creating Custom Color Paletts
+
+Color linking with more the four colors is getting cognitively difficult.
+
+If we don't have names for the colors that makes the task harder. What is the color name for "Good" in the legend. It is easier to think "look for red" than "look for an off yellow color". It helps when the legend fill color order matches the stack bar fill color order. This recently became the ggplot2 default.
+
+R support several ways of specifying color.
+
+As an example: The `rgb` function defines red, green and blue light intensities on a **0 to 1** scale.
+
+-   `rgb(1,0,0)` is full intensity red.
+
+-   `rgb(0,1,0)` is full intensity green.
+
+-   `rgb(0,0,1)` is full intensity blue.
+
+-   `rgb(1,1,0)` is yellow.
+
+-   `rgb(1,0,1)` is magenta.
+
+-   `rgb(0,1,1 )` is cyan.
+
+-   `rgb(1,1,1)` is white.
+
+-   `rgb(0,0,0)` is black.
+
+-   `rgb(.5,.5.5)` is one shade of gray. This the same as gray(.5).
+
+Similarly we can use **"hex codes"** to define colors as well.
+
+Please use the following links to learn more about on *"Making Custom Color Paletts"* .
+
+1.  [http://www.cookbook-r.com/Graphs/Colors\_(ggplot2)/](http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/)
+
+2.  <https://www.r-bloggers.com/2022/06/custom-colour-palettes-for-ggplot2/>
+
+3.  <https://meghan.rbind.io/blog/2022-10-11-creating-custom-color-palettes-with-ggplot2/>
+
+4.  <https://drsimonj.svbtle.com/creating-corporate-colour-palettes-for-ggplot2>
+
+The example below the shows controlling the fill colors using `scale_fill_manual`.
+
+```{r}
+ggplot(diamonds,aes(x=color,fill=cut))+
+  geom_bar(color=gray(.55)) +
+  labs(x="Diamond Color Classes",
+       y="Count",
+       title="Diamond Data Set",
+       fill="Cut")+
+  scale_fill_manual(
+    values=c("red","orange",rgb(0,.8,0),'cyan','violet'))+ hw
+
+```
+
+## Plots for continuous variables
+
+### 1. Histograms:
+
+```{r}
+ggplot(data=diamonds, aes(x=carat))+
+  geom_histogram(fill="cyan",color="black") + hw
+```
+
+Let's increase the number of X-axis bins.
+
+```{r}
+ggplot(data=diamonds, aes(x=carat))+
+  geom_histogram(fill="cyan",color="black",bins=50) + hw
+
+```
+
+Now, adjust the x-axis:
+
+```{r}
+ggplot(data=diamonds, aes(x=carat))+
+  geom_histogram(fill="cyan",color="black",bins=50) +
+  xlim(0,3.5) +  hw
+```
+
+### 2. Kernel Density plots:
+
+```{r}
+ggplot(data=diamonds, aes(x=carat))+
+  geom_density(fill="cyan",color="black")+ hw
+
+```
+
+Let's change the kernel width.
+
+```{r}
+ggplot(data=diamonds, aes(x=carat))+
+  geom_density(fill="cyan",color="black",adjust=2) + hw
+
+```
+
+To change the kernel shape, See `?density` for options
+
+```{r}
+ggplot(data=diamonds, aes(x=carat, color=cut))+
+  geom_density(fill="cyan", color="black",
+               kernel="epanechnikov", adjust=2) + hw
+```
+
+## Superposed Density Plots
+
+Superposed density plots for each level of the factor 'cut', also use this as the density fill color.
+
+The group argument groups data by level of 'cut' so there is density plot for each level. Set the transparency to 0.2. The transparency scale from 0 (transparent) to 1 (no color mixing).
+
+```{r}
+ggplot(data=diamonds, aes( x=carat, group=cut, fill=cut) )+
+  geom_density( color="black", adjust=2, alpha= .2) +
+  scale_fill_manual(
+    values=c("red", "yellow", "green","cyan", "violet")) + hw
+```
+
+The mixing of multiple colors is hard to decode with only one color in the plot the color match with the legend will not be exact because the `alpha` blends the gray.
+
+One could switch to a white plot background with gray grid lines, omit some high carat outliers using `xlim()` for a better view of the densities.
+
+```{r}
+ggplot(data=diamonds, aes(x=carat,group=cut,fill=cut))+
+  geom_density(color="black",adjust=2,alpha=.2)+
+  xlim(0,3.5)
+
+```
+
+## More on Scatter Plots
+
+```{r}
+scatt <- ggplot(diamonds, aes( x=carat, y=price) )
+scatt + geom_point()  + hw
+```
+
+We can improve the above plot by assigning colors to each point by another variable.
+
+### 1. Superposed Scatter plot:
+
+```{r}
+scatt + geom_point( aes( color = color) ) + hw
+```
+
+Due to the sheer number of points it is much harder to understand how the data points are behaving according to different 'diamond colors'.
+
+If we can have different scatter plots for different 'diamond colors' we can study the behavior for each color.
+
+### 2. Juxtaposed scatterplots using facet_wrap/facet_grid:
+
+```{r}
+scatt + geom_point(aes(color=color))+ facet_wrap(~color) +hw
+```
+
+Similarly we can have a grid arrangement using`grid` instead of `wrap`.
+
+```{r}
+scatt + geom_point(aes(color=color))+ facet_grid(~color) +hw
+```
+
+### 3. Two-way juxtaposed scatterplots:
+
+```{r}
+scatt + geom_point(aes(color=color))+ facet_grid(clarity~color)+hw
+```
+
+#### Restricting the X-axis scale and better labeling for Axes
+
+```{r}
+scatt2 <- ggplot(diamonds, aes( x=carat, y=price/1000) )
+```
+
+```{r}
+scatt2 + geom_point(aes( color = color))+
+  facet_grid( clarity~cut )+
+  hw + xlim(0,3.5)+
+  labs(x="Carats, 9 Diamonds With Carats > 3.5 removed",
+       y="Price in $1000",
+       title=paste("Diamonds: Row Panels for Clarity Classes",
+                   "Column Panels for Cut Classes",sep="\n"),
+       color="Color") + hw
+```
+
+# Row-Labeled Plots
+
+For this example we will look at new data set extracted from "Dow Jones Index". Let's import the `csv` file and look at the data set.
+
+```{r include=FALSE}
+DowJones <- read.csv(file = "/Users/isurudassanayake/Dropbox/Stat 515/New materials/for 515/Week 3/DowJones2014Jan18.csv")
+```
+
+```{r eval=FALSE}
+DowJones <- read.csv(file = "DowJones2014Jan18.csv")
+```
+
+```{r}
+str(DowJones)
+```
+
+A row labeled plot:
+
+```{r}
+ggplot(DowJones, aes(x = Yearly, y = Company)) +
+  geom_point(
+    shape = 21,
+    fill = "blue",
+    color = "black",
+    size = 3
+  ) +
+  labs(x = "One Year Percent Change",
+       title = "Dow Jones January 18, 2014") + hw
+```
+
+When we read the company names in the row-labeled dot plot we may notice they are in descending alphabetical order from top to bottom.
+
+Alphabetic order may be good for finding a company names but people are often interested in the rank order of the companies based on a variable such as the one-year percent change.
+
+The `reorder()` function provides simple way to control the row plotting order so that the company with the largest percent change in yearly value appears at the top.
+
+The second argument of reorder() specifies tibble variable that we want to control the Company order on the y-axis. In table terminology y-axis order is the row order. In table terminology rows are numbered top down. The graph y-axis convention the number increase from bottom to top. Convention conflicts can be bothersome and be behind communication problems.
+
+### Sorting the rows
+
+```{r}
+ggplot(DowJones, aes(x = Yearly,  y = reorder(Company, Yearly))) +
+  geom_point(
+    shape = 21,
+    fill = "blue",
+    size = 3,
+    color = "black"
+  ) +
+  labs(x = "One Year Percent Change",
+       y = "Company",
+       title = "Dow Jones January 18, 2014") + hw
+```
+
+We can use -Yearly reverse the company plotting order.
+
+**Reversing the sort order**
+
+```{r}
+ggplot(DowJones, aes(x = Yearly, y = reorder(Company,-Yearly))) +
+  geom_point(
+    shape = 21,
+    fill = "blue",
+    size = 3,
+    color = "black"
+  ) +
+  labs(x = "One Year Percent Change",
+       y = "Company",
+       title = "Dow Jones January 18, 2014") + hw
+
+```
+
+In plot production, sorting cases and variables often serves to simplify plot appearance!. This can also bring out patterns that were obscure and call attention to deviations from the dominant patterns.
+
+
+**Exercise:**
+
+Read the "DowJones2012Jan28.csv" file and make a Row-labeled Plot.
+
+
+
+
+
+
+
+
+
+
+
+
+

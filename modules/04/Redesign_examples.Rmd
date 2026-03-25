@@ -1,0 +1,543 @@
+---
+title: "Redesigning Examples"
+author: "Dr. Isuru Dassanayake"
+date: "`r Sys.Date()`"
+output: rmdformats::robobook
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = F,
+                      warning = F)
+```
+
+# Example 1: Family Type
+
+For this example consider the article from Washington Post in 2013. We will try to do our own interpretation for this plot.
+
+![](family%20type.png)
+
+As indicated above the six family categories are: married with father working, married with both working, divorced mother, never-married mother, grandparents and other. The four race and ethnic categories are white, black, Hispanic, and Asian. For simplicity lets refer to this factor a race.
+
+It is good to a see a two factor plot in the Washington Post. The graph design with icons and color has some visual appeal. From one perspective the icons serves as eye candy to augment the text. The graph contains the numeric percents so also serves as two way table of numbers.
+
+We can produce better graphics for showing patterns at the cost of some visual appeal by omitting the icons and colorful circles. This is better for those inclined to think about data patterns.
+
+Loading the libraries.
+
+```{r}
+library(lattice)
+library(tidyverse)
+```
+
+```{r,echo=FALSE}
+hw <- theme_gray()+ theme(
+  plot.title=element_text(hjust=0.5),
+  plot.subtitle=element_text(hjust=0.5),
+  plot.caption=element_text(hjust=-.5),
+
+  strip.text.y = element_blank(),
+  strip.background=element_rect(fill=rgb(.9,.95,1),
+    colour=gray(.5), linewidth =.2),
+
+  panel.border=element_rect(fill=FALSE,colour=gray(.70)),
+  panel.grid.minor.y = element_blank(),
+  panel.grid.minor.x = element_blank(),
+  panel.spacing.x = unit(0.10,"cm"),
+  panel.spacing.y = unit(0.05,"cm"),
+
+# axis.ticks.y= element_blank()
+  axis.ticks=element_blank(),
+  axis.text=element_text(colour="black"),
+  axis.text.y=element_text(margin=margin(0,3,0,3)),
+  axis.text.x=element_text(margin=margin(-1,0,3,0))
+)
+```
+
+Without the eye candy icons, simple labeling of the rows and columns of matrix will suffice. Showing a small well-organized table may work very well! When we produce graphics we often want to start with a well-organized table as the foundation.
+
+Enter the data;
+
+```{r}
+white <- c(22, 50,  8,  2, 13,  6)
+black <- c(5, 24, 13, 24, 20, 15)
+hispanic <- c(21, 33,  9,  7, 20, 9)
+asian <- c(24, 53,  4,  1, 12,  5)
+
+mat <- cbind(white, black, hispanic, asian)
+mat
+
+```
+
+The family type percents for each race were rounded to integers. Due to rounding the total for each race is not 100. For example the total percent for white is 101.
+
+Add row and column labels;
+
+```{r}
+type <- c( "Married, Father Working", "Married, Both Working",
+          "Divorced Mother","Never-married Mother",
+          "Other", "Grandparents")
+race <- c("White","Black","Hispanic","Asian")
+
+
+colnames(mat) <- race
+rownames(mat) <- type
+mat
+```
+
+Using lattice package let's try to plot above information.
+
+```{r}
+oneColumn = dotplot(mat, groups = FALSE,
+  layout = c(1, 4), aspect = .7,
+  origin = 0,type = c("p","h"),
+  main = "Who is Raising the Children?",
+  xlab = "Race Rounded Percents\nMay Not Total 100",
+  scales = list(x = list(tck = 0, alternating = FALSE)),
+  panel = function(...){
+    panel.fill(rgb(.9,.9,.9))
+    panel.grid(h = 0,v = -1,col = "white",lwd = 2)
+    panel.dotplot(col = rgb(0,.5,1),cex = 1.1,...)
+  }
+)
+oneColumn
+
+```
+
+```{r}
+dotplot(mat, groups = FALSE,
+  layout = c(2,2),aspect = .7,
+  origin = 0,type = c("p","h"),
+  main = "Who is Raising the Children?",
+  xlab = "Race Rounded Percents\nMay Not Total 100",
+  scales = list( x = list(tck = 0, alternating = FALSE)),
+  panel = function(...){
+    panel.fill(rgb(.9,.9,.9))
+    panel.grid(h = 0, v = -1, col = "white", lwd = 2)
+    panel.dotplot(col = rgb(0,.5,1),cex = 1.1,...)
+  }
+)
+```
+
+```{r}
+dotplot(mat,groups = FALSE,
+  layout = c(4,1), aspect = .7,
+  origin = 0,type = c("p","h"),
+  main = "Who is Raising the Children?",
+  xlab = "Race Rounded Percents\nMay Not Total 100",
+  scales = list(x = list(tck = 0, alternating = FALSE)),
+  panel = function(...){
+    panel.fill(rgb(.9,.9,.9))
+    panel.grid(h = 0,v = -1,col = "white",lwd = 2)
+    panel.dotplot(col = rgb(0,.5,1),cex = 1.1,...)
+  }
+)
+```
+
+The notion of being well-ordered depends on the context. In some situations we expect a factor's categories to have particular order. For example we expect the categories of small, medium and large have a size order. We may choose to use an increasing or decreasing order but it would impose cognitive burden on our readers if we put medium first or last in the order.
+
+Various disciplines have ordered categories. Some categories arise from describing continuous numeric values with intervals that are expressed as factor categories. Often such numeric orderings are to be respected, but not always. The context can takes precedence. For example Low, Normal, and High blood pressure groups of people have an immediate order in terms of blood pressure. However, the context of longevity can dictate different ordering. There are many contexts in which the extremes are bad and the middle is good.
+
+Sometimes numbers are used to label regions in a map and don't have an strong ordering in terms of latitude or longitude or other numeric value other than perhaps the order in which the regions defined or were assigned numbers. From a pattern perception perspective these categories can be reordered, but we should at least recognized that even in the relatively arbitrary ordering context there will be a cognitive burden on those expecting see region in the order of their labeling numbers.
+
+People may have race and family type biases and so prefer a particular ordering. However in the data exploration context the goal is let the data show us the patterns. Here we will sort the rows and column to bring similar rows close together and similar columns close together. We will start by sorting the columns.
+
+Each column has vector of values. We seek a summary value for each column/rows that we can use to sort the column/rows. Since column values are all in the same units, percents, we can use the column/row mean is the basis for sorting column/rows. In other cases we might choose the median, the minimum, maximum, the standard deviation or other summary statistic is the basis for sorting. This approach is reasonable when the data values are in the same units or are unit-less.
+
+```{r}
+typeMeans <- rowMeans(mat)
+typeMeans
+
+
+(typeOrd <- order(-typeMeans)) # in descending order
+cbind(mat,typeMeans)[typeOrd,]
+
+```
+
+```{r}
+dotplot(mat[typeOrd,],groups = FALSE,
+  layout = c(2,2),aspect = .7,
+  type = c("p","l"),
+  main = "Who is Raising the Children?",
+  xlab = "Race Rounded Percents\nMay Not Total 100",
+  scales = list(x = list(tck = 0, alternating =  FALSE)),
+  panel = function(...){
+    panel.fill(rgb(.9,.9,.9))
+    panel.grid(h = 0,v = -1,col = "white",lwd = 2)
+    panel.dotplot(col = rgb(0,.5,1),cex = 1.1,...)
+  }
+)
+```
+
+The next step is to sort the columns. Here we can't just compute the average of each column as a basis for sorting because all of the columns should sum to 100% and the averages from dividing by 6 should all be the same. Since the column value units of measure are the same, percent, we can use either of two related methods to compute values as a basis for sorting. These are classical multidimensional scaling and principle components. We could use the first principal component to sort the columns. Here we introduce classical multidimensional scaling since it is likely to be less familiar. It is not necessarily better.
+
+We have four races as cases. With 6 values each, we can think of races as four points is 6 dimensional space so can compute the distance between all pairs of points.
+
+```{r}
+matOrder = mat[typeOrd,]
+raceRow <- t(matOrder) # transpose of the matrix
+raceRow
+
+
+EucDis <- dist(raceRow)
+round(EucDis)
+
+```
+
+We can see the smallest distance, 6, is between Asian and White points and the largest distance, 44, is between Asian and Black points.
+
+Classical multidimensional scaling creates points in lower dimensions whose distance between point pairs form a matrix that approximates the matrix of six dimensional distances. The approximation is the best possible in terms of sums of squares difference between the elements of the two distance matrices. The approximation gets worse and points are created in lower and lower dimensions. For graphical representations researchers often seek points two or three dimensions. Here we just want to order the points so we seek four points in one dimension and so put `k=1` as the argument in the function below.
+
+```{r}
+racePoints <- cmdscale(EucDis,k = 1)
+round(racePoints)
+
+```
+
+Now let's sort the races according to the above values;
+
+```{r}
+raceOrder = order(-round(racePoints))
+
+matfinal = t(raceRow[raceOrder,])
+matfinal # final sorted matrix
+
+```
+
+Above table or transpose of the above table provides a good framework for visualizations.
+
+```{r}
+dotplot(matfinal,groups = FALSE,
+  layout = c(4,1),aspect = .7,
+  type = c("p","l"),
+  main = "Who is Raising the Children?",
+  xlab = "Race Rounded Percents\nMay Not Total 100",
+  scales = list(x = list(tck = 0, alternating =  FALSE)),
+  panel = function(...){
+    panel.fill(rgb(.9,.9,.9))
+    panel.grid(h = 0,v = -1,col = "white",lwd = 2)
+    panel.dotplot(col = rgb(0,.5,1),cex = 1.1,...)
+  }
+)
+```
+
+## Visualizing using ggplot
+
+With the `lattice` package, we could reorder matrix rows and columns. This let us avoid the explicit modification of factor levels to control row name and the panel order. With `ggplot2` we need a `data.frame` or tibbles with factors whose level control the row plotting order that the panel layout order.
+
+Now let's create a data.frame from a matrix and including factors. We first created a data.frame from a sorted matrix above, then include the row names as factors and finally use the gather function in the `tidyr` package to make it an indexed data.frame.
+
+```{r}
+
+famRace <- as.data.frame(matfinal) # make a data.frame
+famRace
+
+
+
+
+types = rownames(famRace)
+famRace$Types = factor(types, ordered = T, levels = rev(types) ) #including row labels as a new column and categorize them as a factor
+famRace
+
+rownames(famRace) = NULL # removing row names from the data set (Optional)
+famRace
+```
+
+Now make an indexed data.frame that stacks the race column values
+
+```{r}
+famRaceType <- gather(famRace, key = Race, value = Percent,Asian:Black,
+  factor_key = T)
+
+famRaceType
+```
+
+factor_key = TRUE keeps the level order specified rather than sorting in alphabet order.
+
+```{r}
+ggplot(famRaceType, aes(x= Percent,y=Types,fill = Race,group = Race)) +
+  geom_point(shape = 21, size = 2.8) + 
+  geom_line(aes(color = Race)) +
+  labs(x = "Percent",y="",title = "Who's Raising the Children?")+
+  facet_wrap(~Race)+ scale_x_continuous(breaks=seq(0,50,by =10)) + 
+  hw + 
+  theme(legend.position ="none")
+```
+
+```{r}
+ggplot(famRaceType, aes(x= Percent,y=Types,fill = Race,group = Race)) +
+  geom_point(shape = 21, size = 2.8) + geom_line(aes(color = Race)) +
+  scale_x_continuous(breaks=seq(0,50,by =10)) +
+  labs(x = "Percent",y ="",title = "Who's Raising the Children?")+
+  facet_grid(~Race) + hw + theme(legend.position ="none") 
+```
+
+Create two perceptual groups in each panel. We will use `geom_path` lines to connect the top three dots and to connect the bottom three dots.
+
+`geom_path` connects the dot in a group using the row order in the data frame. We need put the rows in the desired family type order.
+
+Use family type numbers 1:6 and `cut()` to create 2 groups of 3 family types.
+
+Family types with numbers 1:3 will be in the (0, 3.5] group 4:6 will be in the (3.5, 6] group.
+
+```{r}
+famSorted <- mutate(famRaceType,
+  G2 = cut(as.numeric(Types),
+         breaks = c(0, 3.5, 6))
+)
+
+famSorted
+```
+
+Above we can see the structure group of three in the G2 column. The factor patterns may be easier to see when converted to integers.
+
+```{r}
+
+cbind(as.numeric(famSorted$Race),
+      as.numeric(famSorted$Types),
+      as.numeric(famSorted$G2))
+```
+
+Use paths to link the dots in each perceptual group
+
+```{r}
+ggplot(famSorted,aes(x = Percent,y = Types,group = G2))+
+  geom_path(color = "blue",size = 1) +
+  geom_point(shape = 21,fill = "blue", color = "black", size = 2.7) +
+  geom_point(shape = 21,fill = "white",color = 'white',size = 1) +
+  labs(x = "Percent",y = "",
+       title="Who's Raising the Children?") +
+  facet_grid(~Race) + hw
+```
+
+# Example 2: Mothers at Risk
+
+For this example we will use following two theme codes.
+
+```{r}
+hwLeft <- theme_gray()+ theme(
+  plot.title=element_blank(),
+  plot.subtitle=element_text(hjust=0.5),
+  plot.caption=element_text(hjust=-.5),
+
+  strip.text.y = element_blank(),
+  strip.background=element_rect(fill=rgb(.9,.95,1),
+    colour=gray(.5), linewidth=.2),
+
+  panel.border=element_rect(fill=FALSE,colour=gray(.70)),
+  panel.grid.minor.y = element_blank(),
+  panel.grid.minor.x = element_blank(),
+  panel.spacing.x = unit(0.10,"cm"),
+  panel.spacing.y = unit(0.05,"cm"),
+
+# axis.ticks.y= element_blank()
+  axis.ticks=element_blank(),
+  axis.text=element_text(colour="black"),
+  axis.text.y=element_text(margin=margin(0,3,0,3)),
+  axis.text.x=element_text(margin=margin(-1,0,3,0))
+)
+
+hwRight <- theme_gray()+ theme(
+  plot.title=element_blank(),
+  plot.subtitle=element_text(hjust=0.5),
+  plot.caption=element_text(hjust=-.5),
+
+  strip.text.y = element_blank(),
+  strip.background=element_rect(fill=rgb(.9,.95,1),
+    colour=gray(.5), linewidth=.2),
+
+  panel.border=element_rect(fill=FALSE,colour=gray(.70)),
+  panel.grid.minor.y = element_blank(),
+  panel.grid.minor.x = element_blank(),
+  panel.spacing.x = unit(0.10,"cm"),
+  panel.spacing.y = unit(0.05,"cm"),
+
+# axis.ticks.y= element_blank()
+  axis.ticks=element_blank(),
+  axis.text=element_text(colour="black"),
+  axis.text.y=element_blank(),
+  axis.text.x=element_text(margin=margin(-1,0,3,0))
+)
+
+```
+
+For the next example, let's examine this old news paper article.
+
+![](mothers%20at%20risk.png)
+
+Let's enter the data as vectors
+
+```{r}
+attend <- c(25,8,12,31,2,17,15,30,8,8,6,16,24,26,24,15,47,38,44,20,31)
+deaths <- c(18,17,16,16,16,15,15,15,15,14,14,14,13,13,12,12,12,12,11,10,10)
+nams <- c('Sierra Leone','Afghanistan','Bhutan','Guinea','Somalia','Angola','Chad',
+          'Mozambique','Nepal','Ethiopia','Eritrea','Yemen','Burundi','Rwanda',
+          'Mali','Niger','Senegal','Uganda','Gambia','Haiti','Nigeria')
+```
+
+Saving as a tibble:
+
+```{r}
+motherDeaths = tibble(Countries = nams,
+  DeathRates = deaths, Attended = attend)
+
+#write.csv(motherDeaths,file = "motherDeaths.csv",
+#  row.names = FALSE)
+```
+
+Let's make a scatter plot with a smooth
+
+```{r}
+plt <-  ggplot(motherDeaths,
+  aes(x = Attended, y = DeathRates)) +
+  geom_smooth(method="loess",span=.90,method.args=list(degree=1),
+      linewidth=1.5,color="blue") +
+  geom_point(shape=21,size=4,color="black",fill="red") +
+  labs(x="Percent Births Attended By Trained Personnel",
+       y="Maternal Deaths Per 1000 Live Births",
+       title="Maternal Risk 1990-1996") + hw
+plt
+```
+
+Now let's make a plot with select Countries and Add labels to Points
+
+Below `%>%` pipes the 'motherDeaths' `data.frame` into the first argument of `filter()`. The filter function selects rows of the data.frame.
+
+```{r}
+ptLabs <- motherDeaths %>% filter(Countries %in%
+     c('Sierra Leone','Guinea','Haiti','Nigeria'))
+ptLabs
+```
+
+Below we use the selected Country names as labels. We have nudged the labels upward by 0.9 y-axis.
+
+```{r}
+plt + geom_label(data = ptLabs,
+      aes(label = Countries),
+      nudge_y = .9)
+```
+
+### Make row labeled plot with juxtaposed columns for two different variables
+
+The ggplot `facet_grid` and `facet_wrap` are often useful for producing multiple panel layouts. We will make frequent use of this latter.
+
+The script below shows an alternative way to produce multiple panel plots. It uses `grid.arrange()` from the `gridExtra` package.
+
+We save the plots as named objects and put them the panels. We can control the number rows and columns of panels. As as far as I know we cannot control the horizontal spacing between the panels using `grid.arrange` likely this can be done with `ggtable`.
+
+### Test the left column dot plot
+
+```{r}
+ggplot(motherDeaths,aes(x = Attended,
+  y = reorder(Countries,-Attended))) +
+  geom_point(shape = 21,fill = "cyan",
+    color = 'black',size = 3) +
+  labs(x = "Percent Births Attended\nBy Trained Personnel",
+     y = "Countries") +  hw
+
+```
+
+###Make the Left column Dot Plot with the Country Names
+
+Omit the title and the y axis label use the theme in `hwLeft`
+
+```{r}
+pltLeft <- ggplot(motherDeaths,aes(x = Attended,
+  y = reorder(Countries,-Attended))) +
+  geom_point(shape = 21,fill = "cyan",
+    color = 'black',size = 3.5) +
+  labs(y = "",
+     x = "Percent Births\n Attended By Trained Personnel") +
+  hwLeft
+
+pltLeft
+```
+
+### Make the Right column Dot Plots without the Country names
+
+Omit the title
+
+```{r}
+pltRight <- ggplot(motherDeaths,aes(x = DeathRates,
+  y = reorder(Countries,-Attended))) +
+  geom_point(shape = 21,fill = "red",
+    color = 'black',size = 3.5) +
+  labs(y = "",
+     x = "Maternal Deaths\nPer 1000 Live Births") +  hwRight
+pltRight
+
+```
+
+Put the two together and add a title using `grid.arrange`
+
+```{r}
+library(gridExtra)
+grid.arrange(pltLeft,pltRight,ncol = 2,widths = c(2.6,2),
+  top = "Maternal Risk Giving Birth\n For Selected Countries 1990-1996")
+```
+
+### Creating Perceptual Groups of size 3
+
+Here we modify the `data.frame` and give it a new name.
+
+The construction:
+
+1.  Arranges the data.frame rows so the countries are in the top down order that we want in the plot.
+2.  Change the country factor level to be in the reverse order of the top down order consistent with plot y-axis convention.
+3.  Adds a row perceptual row grouping factor with levels the keep groups of rows in the same top down order.
+
+Sorting the data frame rows so the Country order match that in above order. Revise the factor level match.
+
+#### Get the topDown order
+
+```{r}
+newLevels <- levels( with(motherDeaths,reorder(Countries,-Attended)))
+topDown <- rev(newLevels)
+topDown
+```
+
+#### Rearrange rows
+
+```{r}
+subs <- match(topDown,motherDeaths$Countries)
+mdSort <- motherDeaths[subs,]  # rearrange rows
+```
+
+#### Make factor levels provide the top down order
+
+```{r}
+mdSort$Countries <- factor(topDown,rev(topDown))
+```
+
+#### Add a grouping factor
+
+We have 21 rows. Here we use 7 groups (labeled G1 to G7) of size 3.
+
+Another reasonable choice is a 5-5-1-5-5 pattern the facet grid argument `space="free_y"` will give less space to the group of size 1.
+
+```{r}
+nam <- paste0("G",7:1)
+Grp <- factor(rep(nam,each = 3),levels=nam)
+(mdSort$Grp <- Grp)
+
+```
+
+Now the plots:
+
+```{r}
+pLeft <- ggplot(mdSort,aes(x = Attended, y = Countries)) +
+  geom_point(shape = 21,fill = "cyan",color = 'black',size = 2.5)+
+  facet_grid(Grp~.,scales = "free_y") +
+  labs(y = "",
+     x = "Percent Births\n Attended By Trained Personnel") + hwLeft
+pLeft
+
+pRight <- ggplot(mdSort,aes(x = DeathRates, y = Countries)) +
+  geom_point(shape = 21,fill = "red",color = 'black',size = 2.5) +
+  facet_grid(Grp~.,scales = "free_y") +
+  labs(y="", x="Maternal Deaths\nPer 1000 Live Births") + hwRight
+pRight
+
+grid.arrange(pLeft,pRight,ncol=2,widths=c(2.6,2),
+  top="Maternal Risk Giving Birth\n For Selected Countries 1990-1996")
+```

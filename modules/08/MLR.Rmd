@@ -1,0 +1,1032 @@
+---
+title: "Multiple Linear Regression Analysis"
+author: "Dr. Isuru Dassanayake"
+date: "`r Sys.Date()`"
+output: rmdformats::robobook
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE)
+```
+
+# Notation and Simple Matrix Algebra
+
+We will use n to represent the number of distinct data points, or
+observations, in our sample. We will let $p$ denote the number of
+variables that are available for use in making predictions. For example,
+if we have a data set consisting of 3,000 people and 12 variables, we
+have $n=3000$, $p=12$. In some examples, $p$ might be quite large, such
+as on the order of thousands or even millions; this situation arises
+quite often, for example, in the analysis of modern biological data.
+
+In general, we will let $x_{i j}$ represent the value of the $j$ th
+variable for the $i$ th observation, where $i=1,2 \ldots, n$ and
+$j=1, \ldots, p$. So, always the first subscript refers to an
+observation and the second subscript to a variable. We let $X$ denote a
+$n \times p$ matrix whose $(i, j)^{\text {th }}$ element is $x_{i j}$.
+That is, $$
+X=\left(\begin{array}{llll}
+x_{11} & x_{12} & \cdots & x_{1 p} \\
+x_{21} & x_{22} & \cdots & x_{2 p} \\
+x_{n 1} & x_{n 2} & \cdots & x_{n p}
+\end{array}\right)
+$$ This matrix $n$ rows and $p$ columns. We say this matrix has order
+$n \times p$. Note each column is a variable and each row is an
+observation.
+
+At times we will be interested in the rows of $X$, which are vectors
+denoted $x_1, x_2, \ldots, x_n$. Here $x_i$ is a vector of length $p$.
+Vectors will always be written as column vectors $$
+x_i=\left(\begin{array}{c}
+x_{i 1} \\
+x_{i 2} \\
+\cdot \\
+\cdot \\
+x_{i p}
+\end{array}\right)
+$$
+
+At other times we will instead be interested in the columns of $X$,
+which we write as $\mathrm{x}_1, \ldots, \mathrm{x}_p$, each of which is
+a vector of length $n$. That is, $$
+x_j=\left(\begin{array}{c}
+x_{1 j} \\
+x_{2 j} \\
+\cdot \\
+\vdots \\
+x_{n j}
+\end{array}\right)
+$$ Using this notation, the matrix $X$ can be written as $$
+X=\left(\begin{array}{llll}
+\mathrm{x}_1 & \mathrm{x}_2 & \ldots & \mathrm{x}_p
+\end{array}\right)
+$$ We write $X^T$ to denote the transpose of a matrix or vector. So, for
+example, $$
+X^T=\left(\begin{array}{llll}
+x_{11} & x_{21} & \ldots & x_{n 1} \\
+x_{12} & x_{22} & \ldots & x_{n 2} \\
+x_{1 p} & x_{2 p} & \ldots & x_{n p}
+\end{array}\right)
+$$ This matrix $p$ rows and $n$ columns, i.e. its order is $p \times n$.
+We use $y_i$ to denote the $i$ th observation of the variable on which
+we wish to make predictions. Hence, we write the set of all $\mathrm{n}$
+observations in vector form as $$
+y=\left(\begin{array}{c}
+y_1 \\
+y_2 \\
+\cdot \\
+\cdot \\
+\dot{y}_n
+\end{array}\right)
+$$ Then our observed data consists of, $$
+\left\{\left(x_1, y_1\right),\left(x_2, y_2\right), \ldots,\left(x_n, y_n\right)\right\}
+$$ where each $x_i$ is a vector of length $p$. So, if $p=1$, then $x_i$
+is simply a scalar. To indicate that an object is a scalar, we will use
+the notation $a \in \Re$. To indicate that it is a vector of length $k$,
+we will use $a \in \Re^k$. We will indicate that an object is a
+$r \times s$ matrix using $A \in \Re^{r \times s}$.
+
+### Matrix Operations
+
+Addition and subtraction of two matrices is done element by element
+provided that the matrices have the same order, say $r \times s$.
+Multiplying the elements of a matrix by a scalar is also done element by
+element. Thus, $$
+(A \pm B)_{i j}=a_{i j} \pm b_{i j}
+$$ and $$
+(k A)_{i j}=k a_{i j}
+$$ for $i=1,2, \ldots, r$ and $j=1,2, \ldots, s$. It is important to
+understand the concept of multiplying two matrices. Suppose that
+$A \in \mathscr{R}^{r \times d}$ and $B \in \Re^{d x s}$. Then the
+product of $A$ and $B$ is denoted $A B$. The $(i, j)$ th element $A B$
+of is computed by multiplying each element of the $i$ th row of $A$ by
+the corresponding element of the $j$ th column of $B$. That is, $$
+(A B)_{i j}=\sum_{k=1}^d a_{i k} b_{k j}=a_{i 1} b_{1 j}+a_{i 2} b_{2 j}+\ldots+a_{i d} b_{d j}
+$$ Note that $A B$ will be and $r \times s$ matrix. As an example,
+consider $$
+A=\left(\begin{array}{cc}
+1 & 2 \\
+-1 & 3
+\end{array}\right) \text { and } B=\left(\begin{array}{ll}
+2 & 0 \\
+4 & 1
+\end{array}\right)
+$$ Then $$
+A B=\left(\begin{array}{ll}
+10 & 2 \\
+10 & 3
+\end{array}\right)
+$$ Suppose that $A \in \Re^{r \times d}$. We can think of a column
+vector $x$ as $\in \Re^{d \times 1}$ and so the multiplication gives us
+a vector $y \in \Re^{r \times 1}$
+
+# Multiple Linear Regression
+
+Simple linear regression is a useful approach for predicting a response
+on the basis of a single predictor variable. However, in practice we
+often have more than one predictor. For example, we may look at the
+relationship between sales and amount of money spent on TV, radio, and
+newspapers advertising, and we may want to know whether either of these
+media is associated with sales.
+
+How can we extend simple linear regression to the case of $p$
+predictors? One option is to run p separate simple linear regressions.
+However, the approach of ﬁtting a separate simple linear regression
+model for each predictor is not entirely satisfactory. First of all, it
+is unclear how to make a single prediction of Y given levels of the p
+predictors, since each is associated with a separate regression
+equation. Second, each one of the regression equations ignores the other
+$(p-1)$ predictors in forming estimates for the regression coeﬃcients.
+If the predictors are correlated with each other, then this can lead to
+very misleading estimates.
+
+Instead of ﬁtting a separate simple linear regression model for each
+predictor, a better approach is to extend the simple linear regression
+model so that it can directly accommodate multiple predictors. We can do
+this by giving each predictor a separate slope coeﬃcient in a single
+model. Hence, the multiple linear regression model takes the form,
+
+$$
+Y=\beta_0+\beta_1 X_1+\cdots+\beta_p X_p+\epsilon
+$$ where $X_j$ represents the $\boldsymbol{j}$ th predictor and
+$\beta_j$ quantifies the association between that variable and the
+response. We interpret $\beta_j$ as the average effect on $Y$ of a one
+unit increase in $X_j$, holding all other predictors fixed.
+
+Here $Y=(y_1,y_2,...,y_n)$ and $X_j=(x_{j1},x_{j2},...,x_{jn})$. Thus,
+this equation is, in fact equivalent to a system of $n \times p$
+equations: $$
+\begin{aligned}
+& y_1=\beta_0+\beta_1 x_{11}+\beta_2 x_{12}+\cdots+\beta_p x_{1 p}+\epsilon_1 \\
+& y_2=\beta_0+\beta_1 x_{21}+\beta_2 x_{22}+\cdots+\beta_p x_{2 p}+\epsilon_2\\
+& .........................................
+\end{aligned}
+$$ $$
+y_i=\beta_0+\beta_1 x_{i 1}+\beta_2 x_{i 2}+\cdots+\beta_p x_{i p}+\epsilon_i\\
+.........................................
+$$ $$
+y_n=\beta_0+\beta_1 x_{n 1}+\beta_2 x_{n 2}+\cdots+\beta_p x_{n p}+\epsilon_n
+$$ or letting $\boldsymbol{X}$ be the $n \times(p+1)$ matrix $$
+\boldsymbol{X}=\left(\begin{array}{ccc}
+1 & x_{11} & x_{1 p} \\
+\vdots & \ddots & \vdots \\
+1 & x_{n 1} \cdots & x_{n p}
+\end{array}\right)
+$$ and $$
+\boldsymbol{\beta}=\left(\beta_0  \beta_1  \beta_2  \ldots  \beta_p \right)
+$$
+
+$$
+\boldsymbol{\epsilon}=\left(\epsilon_1 \epsilon_2 \ldots \epsilon_n\right)
+$$ we can write this in matrix notation as $$
+\boldsymbol{Y}=\boldsymbol{X} \boldsymbol{\beta}+\boldsymbol{\epsilon}
+$$
+
+## Estimating the Regression Coeﬃcients
+
+As was the case in the simple linear regression setting, the regression
+coefficients $\beta_1, \beta_2, \ldots, \beta_p$ are unknown, and must
+be estimated. Given the estimates
+$\hat{\beta}_0, \hat{\beta}_1, \ldots, \hat{\beta}_p$ we can make
+predictions using the formula $$
+\hat{Y}=\hat{\beta}_0+\hat{\beta}_1 x_1+\cdots+\hat{\beta}_p x_p
+$$ The parameters are estimated using the same least squares approach
+that we saw in the context of simple linear regression. We choose
+$\beta_1, \beta_2, \ldots, \beta_p$ to minimize the sum of squared
+residuals $$
+R S S=\sum_{i=1}^n\left(y_i-\hat{y}_i\right)^2=\sum_{i=1}^n\left(y_i-\hat{\beta}_0-\hat{\beta}_1 x_{i 1}-\cdots-\hat{\beta}_p x_{i p}\right)^2
+$$ The values $\hat{\beta}_0, \hat{\beta}_1, \ldots, \hat{\beta}_p$ that
+minimize this quantity are called the multiple least squares regression
+coefficient estimates. Setting the partial derivatives equal to zero, we
+get the normal equations $$
+\boldsymbol{X}^{\mathrm{T}} \boldsymbol{X} \widehat{\boldsymbol{\beta}}=\boldsymbol{X}^{\mathrm{T}} \boldsymbol{Y}
+$$ and the least squares estimates $$
+\widehat{\boldsymbol{\beta}}=\left(\boldsymbol{X}^T \boldsymbol{X}\right)^{-1} \boldsymbol{X}^T \boldsymbol{Y}
+$$ Now since $\boldsymbol{X}$ is $n \times(p+1)$ and
+$\boldsymbol{X}^{T_{\text {is }}}(p+1) \times n$, the product and its
+inverse is $(p+1) \times(p+1)$. That multiplied by
+$\boldsymbol{X}^{\boldsymbol{T}}$ would be $(p+1) \times n$, and that
+multiplied by $\boldsymbol{Y}$ would be a vector of dimension $p+1$. In
+practice, these calculations are always carried out using a computer.
+
+### Example: Boston Data set cts...
+
+Now let's try to fit a MLR model for the Boston data set.
+
+```{r}
+library(MASS)
+data(Boston)
+```
+
+Once data set is cleaned, let's try to create a scatter plot matrix to
+observe the behavior of the data set.
+
+```{r fig.width=15, fig.height=15}
+pairs(Boston)
+```
+
+Or we can use the library `psych` to create a more interesting plot.
+
+```{r, fig.width=16, fig.height=15}
+library(psych)
+
+pairs.panels(Boston)
+```
+
+Now let's fit a MLR for `medv` by using all the predictor variables.
+
+```{r}
+fit = lm(medv~., data=Boston)
+
+summary(fit)
+```
+
+### Caution!!! 
+
+-   Keep in mind that by examining pairs of variables we are seeking a
+    better understanding of the data.
+    
+-   The fact that the correlation of a particular explanatory variable
+    with the response variable does not achieve statistical significance
+    does not necessarily imply that it will not be a useful predictor in
+    a multiple regression analysis.
+    
+-   There exists a misconception that the magnitude of the estimate of $\beta_i$ determines the importance of $x_i$. It is wrong to think that the  larger (in absolute value) the estimate of $\beta_i$, the more important the explanatory variable $x_i$ is as a predictor of y.
+
+### Some Important Questions:
+
+When we perform multiple linear regression, we usually are interested in
+answering a few important questions. 1.
+
+1.  Is at least one of the predictors $X_1,X_2,…,X_p$ useful in
+    predicting the response?
+
+2.  Do all the predictors help to explain Y, or is only a subset of the
+    predictors useful?
+
+3.  How well does the model ﬁt the data?
+
+4.  Given a set of predictor values, what response value should we
+    predict, and how accurate is our prediction?
+
+We now address each of these questions in turn.
+
+## 1. Relationship between the response and predictors
+
+Recall that in the simple linear regression setting, in order to
+determine whether there is a relationship between the response and the
+predictor we can simply check whether $\beta_1=0$. In the multiple
+regression setting with $p$ predictors, we need to ask whether all of
+the regression coefficients are zero, i.e. whether
+$\beta_1=\beta_2=\cdots=\beta_p=0$, in other words, we test the null
+hypothesis, $$
+H_0: \beta_1=\beta_2=\cdots=\beta_p=0
+$$ versus the alternative $$
+H_a \text { : At least one } \beta_j \text { is non-zero }
+$$ This hypothesis test is performed by computing the F-statistic, which
+is computed as $$
+F=\frac{(T S S-R S S) / p}{R S S /(n-p-1)}
+$$ where, as with simple linear regression, $$
+T S S=\sum_{i=1}^n\left(y_i-\bar{y}\right)^2
+$$ and $$
+R S S=\sum_{i=1}^n\left(y_i-\hat{y}_i\right)^2=\sum_{i=1}^n\left(y_i-\hat{\beta}_0-\hat{\beta}_1 x_{i 1}-\cdots-\hat{\beta}_p x_{i p}\right)^2
+$$ If the linear model assumptions are correct, one can show that $$
+E[R S S /(n-p-1)]=\sigma^2
+$$ and that, provided that $H_0$ is true, $$
+E[(T S S-R S S) / p)]=\sigma^2
+$$ Hence, when there is no relationship between the response and
+predictors, one would expect the $F$ statistic to take on a value close
+to 1 . On the other hand, if $H_a$ is true, then, $$
+E[(T S S-R S S) / p)]>\sigma^2
+$$ so we expect $F$ to be greater than 1 .
+
+How large does the $F$-statistic need to be before we can reject $H_0$
+and conclude that there is a relationship? It turns out that the answer
+depends on the values of $n$ and $p$. When $n$ is large, an $F$
+statistic that is just a little larger than 1 might still provide
+evidence against $H_0$. In contrast, a larger $F$ statistic is needed to
+reject $H_0$ if $n$ is small. When $H_0$ is true and the errors
+$\epsilon_i$ have a normal distribution, the $F$-statistic follows an
+$F$-distribution. For any given value of $n$ and $p$, any statistical
+software package can be used to compute the $p$-value associated with
+the $F$-statistic using this distribution. Based on this $p$-value, we
+can determine whether or not to reject $H_0$.
+
+Sometimes we want to test that a particular subset of $q$ of the
+coefficients are zero. This corresponds to a null hypothesis $$
+H_0: \beta_{p-q+1}=\beta_{p-q+2}=\cdots=\beta_p=0
+$$ where for convenience we have put the variables chosen for omission
+at the end of the list. In this case we fit a second model that uses all
+the variables except those last $q$. Suppose that the residual sum of
+squares for that model is $R S S_0$. Then the appropriate $F$-statistic
+is $$
+F=\frac{\left(R S S_0-R S S\right) / q}{R S S /(n-p-1)}
+$$ We usually report a $t$-statistic and a $p$-value for each individual
+predictor. These provide information about whether each individual
+predictor is related to the response, after adjusting for the other
+predictors. It turns out that each of these are exactly equivalent to
+the $F$-test that omits that single variable from the model, leaving all
+the others in - i.e. $q=1$. So, it reports the partial effect of adding
+that variable to the model. Given these individual $p$-values for each
+variable, why do we need to look at the overall $F$-statistic? After
+all, it seems likely that if any one of the $p$-values for the
+individual variables is very small, then at least one of the predictors
+is related to the response. However, this logic is flawed, especially
+when the number of predictors $p$ is large. For instance, consider an
+example in which $p=100$ and $H_0: \beta_1=\beta_2=\cdots=\beta_p=0$ is
+true, so no variable is truly associated with the response.
+
+In this situation, about $5 \%$ of the $p$-values associated with each
+variable will be below 0.05 by chance. In other words, we expect to see
+approximately five small p-values even in the absence of any true
+association between the predictors and the response. In fact, we are
+almost guaranteed that we will observe at least one $p$-value below 0.05
+by chance! Hence, if we use the individual $t$-statistics and associated
+$p$-values in order to decide whether or not there is any association
+between the variables and the response, there is a very high chance that
+we will incorrectly conclude that there is a relationship. However, the
+$F$-statistic does not suffer from this problem because it adjusts for
+the number of predictors. Hence, if $H_0$ is true, there is only a
+$5 \%$ chance that the $F$-statistic will result in a $p$-value below
+0.05 , regardless of the number of predictors or the number of
+observations.
+
+We will discuss about this later in class.
+
+### Example: Boston Data set Cts...
+
+```{r}
+summary(fit)
+```
+
+Here we can see that the `F-Statistisc` is 108.1 with a really small
+`p-value` for this test. Which indicates very strong evidence against
+the Null Hypothesis.
+
+## 2. Deciding on Important Variables
+
+As discussed in the previous section, the ﬁrst step in a multiple
+regression analysis is to compute the F-statistic and to examine the
+associated p-value. If we conclude on the basis of that p-value that at
+least one of the predictors is related to the response, then it is
+natural to wonder which are the guilty ones! We could look at the
+individual p-values, but as discussed, if p is large we are likely to
+make some false discoveries. It is possible that all of the predictors
+are associated with the response, but it is more often the case that the
+response is only related to a subset of the predictors. The task of
+determining which predictors are associated with the response, in order
+to ﬁt a single model involving only those predictors, is referred to as
+variable selection. The variable selection problem is studied
+extensively in Chapter 6, and so here we will provide only a brief
+outline of some classical approaches. Ideally, we would like to perform
+variable selection by trying out a lot of different models, each
+containing a different subset of the predictors.
+
+For instance, if $p=2$, then we can consider four models:
+
+1.  a model containing no variables
+
+2.  a model containing $X_1$ only
+
+3.  a model containing $X_2$ only, and
+
+4.  a model containing both $X_1$ and $X_2$.
+
+We can then select the best model out of all of the models that we have
+considered. How do we determine which model is best? Various statistics
+can be used to judge the quality of a model.
+
+These include **Mallow's Cp**, **Akaike information criterion (AIC)**,
+**Bayesian information criterion (BIC)**, and **adjusted** $R^2$**.**
+These are discussed in more detail later.
+
+We can also determine which model is best by plotting various model
+outputs, such as the residuals, in order to search for patterns.
+Unfortunately, there are a total of $2^p$ models that contain subsets of
+$p$ variables. This means that even for moderate p, trying out every
+possible subset of the predictors is in-feasible. For instance, if
+$p=30$, then we must consider $2^{30}=1,073,741,824$ models! This is not
+practical.
+
+Therefore, unless $p$ is very small, we cannot consider all models, and
+instead we need an automated and eﬃcient approach to choose a smaller
+set of models to consider. There are three classical approaches for this
+task:
+
+1.  Forward Selection
+
+2.  Backward Selection
+
+3.  Mixed Selection
+
+These methods will be discussed later in class.
+
+## 3. Model Fit
+
+Two of the most common numerical measures of model ﬁt are the RSE and
+$R^2$, the fraction of variance explained. These quantities are computed
+and interpreted in the same fashion as for simple linear regression.
+Recall that in simple regression, $R^2$ is the square of the correlation
+of the response and the variable. In multiple linear regression, it
+turns out that it equals $\operatorname{Cor}(Y, \hat{Y})^2$, the square
+of the correlation between the response and the fitted linear model; in
+fact one property of the fitted linear model is that it maximizes this
+correlation among all possible linear models. An $R^2$ value close to 1
+indicates that the model explains a large portion of the variance in the
+response variable.
+
+It turns out that $R^2$ will always increase when more variables are
+added to the model, even if those variables are only weakly associated
+with the response. The fact that adding a predictor leads to just a tiny
+increase in $R^2$ provides additional evidence that that predictor can
+be dropped from the model. In contrast, if adding a predictor leads to a
+substantial improvement in $R^2$, then we may assume that this predictor
+plays an important role.
+
+One may wonder how RSE can increase when a variable is added to the
+model given that RSS must decrease. In general, RSE is defined as $$
+R S E=\sqrt{\frac{RSS}{n-( p+1)}}
+$$ which simplifies to the formula for RSE for a simple linear
+regression in case $p=1$. Thus, models with more variables can have
+higher RSE if the decrease in RSS is small relative to the increase in
+$p$. In addition to looking at the RSE and $R^2$ statistics just
+discussed, it can be useful to plot the data. Graphical summaries can
+reveal problems with a model that are not visible from numerical
+statistics.
+
+### Adjusted $R^2$
+
+The adjusted $R^2$ statistic is another popular approach for selecting
+among a set of models that contain diﬀerent numbers of variables. Recall
+that the usual $R^2$ is deﬁned as,
+
+$$
+R^2=1-\frac{R S S}{T S S}
+$$ where $$
+T S S=\sum\left(y_i-\bar{y}\right)^2
+$$ is the total sum of squares for the response. Since RSS always
+decreases as more variables are added to the model, $R^2$ always
+increases as more variables are added. For a least squares model with
+$d$ variables, the adjusted $R^2$ statistic is calculated as $$
+\text { Adjusted } R^2=1-\frac{R S S /(n-d-1)}{T S S /(n-1)}
+$$ Unlike $C_p$, AIC, and BIC, for which a small value indicates a model
+with low error, a large value of adjusted $R^2$ indicates a model with a
+small error. Maximizing the adjusted $R^2$ is equivalent to minimizing
+$\frac{R S S}{n-d-1}$. While RSS always decreases as the number of
+variables in the model increases, $\frac{R S S}{n-d-1}$ may increase or
+decrease, due to the presence of $d$ in the denominator. The intuition
+behind the adjusted $R^2$ is that once all of the correct variables have
+been included in the model, adding additional noise variables will lead
+to only a very small decrease in RSS. Since adding noise variables leads
+to an increase in $d$, such variables will lead to an increase in
+$\frac{R S S}{n-d-1}$, and consequently a decrease in the adjusted
+$R^2$. Therefore, in theory, the model with the largest adjusted $R^2$
+will have only correct variables and no noise variables. Unlike the
+$R^2$ statistic, the adjusted $R^2$ statistic pays a price for the
+inclusion of unnecessary variables in the model.
+
+## 4. Predictions
+
+Once we have fit the multiple regression model, it is straightforward to
+predict the response $Y$ on the basis of a set of values for the
+predictors $X_1, X_2, \ldots, X_p$. However, there are three sorts of
+uncertainty associated with this prediction.
+
+-   The least squares plane $$
+    \hat{Y}=\hat{\beta}_0+\hat{\beta}_1 x_1+\cdots+\hat{\beta}_p x_p
+    $$ is only an estimate for the true population regression plane $$
+    f(X)=\beta_0+\beta_1 X_1+\cdots+\beta_p X_p
+    $$ The inaccuracy in the coefficient estimates is related to the
+    reducible error. We can compute a confidence interval in order to
+    determine how close $\hat{Y}$ will be to $f(X)$.
+
+-   Of course, in practice assuming a linear model for $f(X)$ is almost
+    always an approximation of reality, so there is an additional source
+    of potentially reducible error which we call model bias. So, when we
+    use a linear model, we are in fact estimating the best linear
+    approximation to the true surface. However, here we will ignore this
+    discrepancy, and operate as if the linear model were correct.
+
+-   Even if we knew $f(X)$ - that is, even if we knew the true values
+    for $\beta_0, \beta_1, \ldots, \beta_p$ - the response value cannot
+    be predicted perfectly because of the random error $\epsilon$ in the
+    model. We referred to this as the irreducible error. How much will
+    $Y$ vary from $\hat{Y}$ ? We use **prediction intervals** to answer
+    this question. Prediction intervals are always wider than confidence
+    intervals, because they incorporate both the error in the estimate
+    for $f(X)$ (the reducible error) and the uncertainty as to how much
+    an individual point will differ from the population regression plane
+    (the irreducible error).
+
+## Nested Models
+
+A major question is, after considering all potential models (first,
+second order ...), which of these models best fits the data. Two models
+are nested if one model contains all the terms of the second model and
+at least one additional term.
+
+The complete (or full) model is the larger or more complex model. The
+reduced (or restricted) model is the simpler model. A common example is
+testing whether the interaction model or the curvilinear quadratic model
+is more appropriate.
+
+### Example:
+
+Will the curvilinear model provide better predictions of y than the
+straight-line interaction model?
+
+-   Model 1 (reduced):
+    $E(y)=\beta_0+\beta_1 x_1+\beta_2 x_2+\beta_3 x_1 x_2$
+-   Model 2 (complete):
+    $E(y)=\beta_0+\beta_1 x_1+\beta_2 x_2+\beta_3 x_1 x_2+\beta_4 x_1^2+\beta_5 x_2^2$
+
+Hypothesis Test:
+
+Here we can see that Model 1 is "nested" within Model 2. To determine
+which model will lead to the best prediction, you need to test whether
+the quadratic terms contribute information for the prediction of $y$ :
+$$
+H_0: \beta_4=\beta_5=0
+$$ vs $H_a:$ at least one parameter differs from 0
+
+-   First, this test allows us to determine whether a specific subset of
+    model terms is useful in predicting y.
+-   Second, the test will allow us to compare which of the two models is
+    a better predictor of y.
+
+The test compares the SSEs from the reduced and complete models. If the
+additional terms in the complete model are significant, then $SSE_C$
+should be much smaller than $SSE_R$.
+
+Since SSE always gets smaller when new terms are added to the model, the
+real question is whether the difference between SSEs is large enough to
+conclude that this difference is due to more than just the decrease
+expected from the addition of the variables and chance.
+
+![](p1.png)
+
+To conduct this test in R we can use the ANOVA function.
+
+In other words, we can re-write the above hypothesis as follows,
+
+$$\begin{gathered}H_0: \text { Reduced model is better } \\ \text { vs } \\ H_a: \text { Reduced model is not better (Full model is better) }\end{gathered}$$
+
+### Example: Advertising Data set Cts...
+
+```{r}
+ad = read.csv("Advertising.csv")
+ad = ad[-1]
+
+fit1 = lm(Sales~TV, data=ad);
+fit2 = lm(Sales~TV+Radio+Newspaper, data=ad);
+anova(fit1, fit2)
+```
+
+Here we reject the null hypothesis, and we select the full model for the
+data set.
+
+# Other Considerations in the Regression Model
+
+## Qualitative Predictors
+
+In our discussion so far, we have assumed that all variables in our
+linear regression model are quantitative. But in practice, this is not
+necessarily the case; often some predictors are qualitative. For
+example, for data involving credit rating, we may need balance (average
+credit card debt for a number of individuals) as well as several
+quantitative predictors: age, cards (number of credit cards), education
+(years of education), income (in thousands of dollars), limit (credit
+limit), and rating (credit rating). In addition to these quantitative
+variables, we may also have qualitative variables: gender, student
+(student status), status (marital status), and ethnicity (Caucasian,
+African American or Asian).
+
+To elaborate more on this let's use the `carseats` dataset from the
+library `ISLR2`
+
+### Example: Carseats dataset
+
+```{r}
+library(ISLR2)
+data(Carseats)
+```
+
+Here let's consider the variable `US` which is a factor variable with
+two levels ignoring the other predictor variables at the moment. We
+simply create an **indicator** or **dummy** variable that takes on two
+possible dummy numerical values.
+
+We can create a new variable that takes the form,
+
+$$x_i= \begin{cases}1 & \text { if ; } \text {US = YES } \\ 0 & \text { if ; } \text { US = NO }\end{cases}$$
+
+and use this variable as a predictor in the regression equation. This
+results in the model,
+
+$$y_i=\beta_0+\beta_1 x_i+\epsilon_i= \begin{cases}\beta_0+\beta_1+\epsilon_i & \text { if ; } \text { US = YES } \\ \beta_0+\epsilon_i & \text { if ; } \text { US = NO }\end{cases}$$
+
+```{r}
+m1 = lm(Sales~US, data= Carseats)
+summary(m1)
+```
+
+When a qualitative predictor has more than two levels, a single dummy
+variable cannot represent all possible values. In this situation, we can
+create additional dummy variables. For example, for the `ShelveLoc`
+variable we create two dummy variables. The first could be,
+
+$$
+x_{i 1}= \begin{cases}1 & \text { if ; }  \text { ShelveLoc is Good } \\ 0 & \text { if ; }  \text { ShelveLoc is not Good  }\end{cases}
+$$ and the second could be $$
+x_{i 2}= \begin{cases}1 & \text { if ; }  \text { ShelveLoc is Medium  } \\ 0 & \text { if ; }  \text { ShelveLoc is not Medium}\end{cases}
+$$ Then both of these variables can be used in the regression equation,
+in order to obtain the model $$
+y_i=\beta_0+\beta_1 x_{i 1}+\beta_2 x_{i 2}+\epsilon_i= \begin{cases}\beta_0+\beta_1+\epsilon_i & \text { if ; }  \text { ShelveLoc is Good} \\ \beta_0+\beta_2+\epsilon_i & \text { if ; }  \text { ShelveLoc is Medium } \\ \beta_0+\epsilon_i & \text { if ; }  \text { ShelveLoc is Bad }\end{cases}$$
+
+```{r}
+m2 = lm(Sales~ShelveLoc, data=Carseats)
+summary(m2)
+
+```
+
+To check the coding of a qualitative variable we can use the following
+code,
+
+```{r}
+contrasts(Carseats$ShelveLoc)
+```
+
+## Extensions of the Linear Model
+
+The standard linear regression model provides interpretable results and
+works quite well on many real-world problems. However, it makes several
+highly restrictive assumptions that are often violated in practice. Two
+of the most important assumptions state that the relationship between
+the predictors and response are additive and linear.
+
+The additive assumption means that the effect of changes in a predictor
+$X_j$ on the response $Y$ is independent of the values of the other
+predictors. The linear assumption states that the change in the response
+$Y$ due to a one-unit change in $X_j$ is constant, regardless of the
+value of $X_j$. In this book, we examine a number of sophisticated
+methods that relax these two assumptions. Here, we briefly examine some
+common classical approaches for extending the linear model. Removing the
+Additive Assumption
+
+Consider the standard linear regression model with two variables, $$
+Y=\beta_0+\beta_1 X_1+\beta_2 X_2+\epsilon
+$$ Additivity means that, if we increase $X_1$ by one unit, then $Y$
+will increase by an average of $\beta_1$ units. Notice that the presence
+of $X_2$ does not alter this statement - that is, regardless of the
+value of $X_2$, a one-unit increase in $X_1$ will lead to a
+$\beta_1$-unit increase in $Y$. One way of extending this model to allow
+for interaction effects is to include a third predictor, called an
+interaction term, which is constructed by computing the product of $X_1$
+and $X_2$. This results in the model $$
+Y=\beta_0+\beta_1 X_1+\beta_2 X_2+\beta_3 X_1 X_2+\epsilon
+$$ How does inclusion of this interaction term relax the additive
+assumption? Notice that this equation can be rewritten as, $$
+Y=\beta_0+\left(\beta_1+\beta_3 X_2\right) X_1+\beta_2 X_2+\epsilon=\beta_0+\tilde{\beta}_1 X_1+\beta_2 X_2+\epsilon
+$$ where $\tilde{\beta}_1=\left(\beta_1+\beta_3 X_2\right)$. Since
+$\tilde{\beta}_1$ changes with $X_2$, the effect of $X_1$ on $Y$ is no
+longer constant: adjusting $X_2$ will change the impact of $X_1$ on $Y$.
+Sometimes, the model that includes the interaction term is superior to
+the model that contains only main effects $X_1$ and $X_2$.
+
+The **hierarchical principle** states that if we include an interaction
+in a model, we should also include the main effects, even if the
+p-values associated with their coefficients are not significant. In
+other words, if the interaction between $X_1$ and $X_2$ seems important,
+then we should include both $X_1$ and $X_2$ in the model even if their
+coefficient estimates have large $p$-values. The rationale for this
+principle is that if $X_1 X_2$ is related to the response, then whether
+or not the coefficients of $X_1$ or $X_2$ are exactly zero is of little
+interest. Also $X_1 X_2$ is typically correlated with $X_1$ and $X_2$,
+and so leaving them out tends to alter the meaning of the interaction.
+
+### Example: Advertising Data set Cts...
+
+```{r}
+fit1 = lm(Sales~TV+Radio, data=ad);summary(fit1)
+
+#Method 1 (add all variables manually)
+fit2 = lm(Sales~TV+Radio+TV*Radio, data=ad);summary(fit2)
+
+#Method 2 (Only include the interaction term)
+fit3 = lm(Sales~TV:Radio, data=ad);summary(fit3)
+
+#Method 3 (includes main effects and interaction)
+fit4 = lm(Sales~TV*Radio, data=ad);summary(fit4)
+```
+
+## Non-Linear Relationships
+
+As discussed previously, the linear regression model assumes a linear
+relationship between the response and predictors. But in some cases, the
+true relationship between the response and the predictors may be
+nonlinear. Here we present a very simple way to directly extend the
+linear model to accommodate non-linear relationships, using polynomial
+regression. In later chapters, we will present more complex approaches
+for performing non-linear ﬁts in more general settings.
+
+For example, if the points in a scatter diagram seem to have a quadratic
+shape, a quadratic model of the form,
+
+$$
+Y=\beta_0+\beta_1 X_1+\beta_2 X_1^2+\epsilon
+$$ But this is still a linear model! That is, this is simply a multiple
+linear regression model with $X_1$ and $X_2=$ $X_1^2$. So we can use
+standard linear regression software to estimate $\beta_0, \beta_1$, and
+$\beta_2$ in order to produce a non-linear fit.
+
+### Example: Boston Data set Cts...
+
+```{r}
+fit1 = lm(medv~lstat, data=Boston); summary(fit1);
+
+#model with quadratic term
+fit2 = lm(medv~lstat+I(lstat^2), data=Boston); summary(fit2);
+
+#since these are nested model we can perform a partial F-test
+
+anova(fit1, fit2) #fit2 is better than fit1 and also check with the Adj. R^2
+```
+
+Here `fit2` is better than `fit1`.
+
+Let's consider another model.
+
+```{r}
+fit3 = lm(medv~poly(lstat, 5), data=Boston); summary(fit3);
+anova(fit2,fit3)
+```
+
+Here `fit3` is better than `fit2`.
+
+You can also consider a transformed variable for model fitting.
+
+```{r}
+fit4 = lm(medv~log(lstat), data=Boston); summary(fit4)
+```
+
+# Potential Problems
+
+When we ﬁt a linear regression model to a particular data set, many
+problems may occur. Most common among these are the following:
+
+1.  Non-linearity of the response-predictor relationships.
+
+2.  Correlation of error terms.
+
+3.  Non-constant variance of error terms.
+
+4.  Outliers.
+
+5.  High-leverage points.
+
+6.  Collinearity. In practice, identifying and overcoming these problems
+    is as much an art as a science. We will provide only a brief summary
+    of some key points.
+
+## 1. Non-linearity of the data
+
+The linear regression model assumes that there is a straight-line
+relationship between the predictors and the response. If the true
+relationship is far from linear, then virtually all of the conclusions
+that we draw from the fit are suspect. In addition, the prediction
+accuracy of the model can be significantly reduced. **Residual plots**
+are a useful graphical tool for identifying non-linearity.
+
+![**Left:** A strong pattern in the residuals indicates non-linearity in
+the data. **Right:** There is little pattern in the residuals.](q1.png)
+
+Given a simple linear regression model, we can plot the residuals,
+$e_i=y_i-y_i$, versus the predictor $x_i$. In the case of a multiple
+regression model, since there are multiple predictors, we instead plot
+the residuals versus the predicted (or fitted) values $\hat{y}_i$.
+Ideally, the residual plot will show no discernible pattern. The
+presence of a pattern may indicate a problem with some aspect of the
+linear model. If the residual plot indicates that there are non-linear
+associations in the data, then a simple approach is to use non-linear
+transformations of the predictors, such as $\log (X), \sqrt{X}$, or
+$X^2$, in the regression model.
+
+## 2. Correlation of error term
+
+An important assumption of the linear regression model is that the error
+terms $\epsilon_1, \epsilon_2, \ldots, \epsilon_n$ are uncorrelated. If
+the errors are uncorrelated, then the fact that $\epsilon_i$ is positive
+provides little or no information about the sign of $\epsilon_{i+1}$.
+The standard errors that are computed for the estimated regression
+coefficients or the fitted values are based on the assumption of
+uncorrelated error terms. If in fact there is correlation among the
+error terms, then the estimated standard errors will tend to
+underestimate the true standard errors. As a result, confidence and
+prediction intervals will be narrower than they should be. For example,
+a 95% confidence interval may in reality have a much lower probability
+than 0.95 of containing the true value of the parameter. In addition,
+$p$-values associated with the model will be lower than they should be;
+significant. In short, if the error terms are correlated, we may have an
+unwarranted sense of confidence in our model. Why might correlations
+among the error terms occur? Such correlations frequently occur in the
+context of time series data, which consists of observations for which
+measurements are obtained at discrete points in time. In many cases,
+observations that are obtained at adjacent time points will have
+positively correlated errors.
+
+In order to determine if this is the case for a given data set, we can
+plot the **residuals from our model as a function of time**. If the
+errors are uncorrelated, then there should be no discernible pattern. On
+the other hand, if the error terms are positively correlated, then we
+may see tracking in the residuals - that is, adjacent residuals tracking
+may have similar values. Many methods have been developed to properly
+take account of correlations in the error terms in time series data.
+
+![Plots of residuals from simulated time series data sets generated with
+differing levels of correlation ρ between error terms for adjacent time
+points.](q2.png)
+
+## 3. Non-constant variance of error terms
+
+Another important assumption of the linear regression model is that the
+error terms have a constant variance,
+$\operatorname{Var}\left(\epsilon_i\right)=\sigma^2$. The standard
+errors, confidence intervals, and hypothesis tests associated with the
+linear model rely upon this assumption. Unfortunately, it is often the
+case that the variances of the error terms are non-constant. For
+instance, the variances of the error terms may increase with the value
+of the response. One can identify non-constant variances in the errors,
+or heteroscedasticity, from the presence of a funnel shape in the
+residual plot (residuals vs fitted values). When faced with this
+problem, one possible solution is to transform the response $Y$ using a
+concave function such as $\log (Y)$ or $\sqrt{Y}$. Such a transformation
+results in a greater amount of shrinkage of the larger responses,
+leading to a reduction in heteroscedasticity.
+
+![Residual plots. In each plot, the red line is a smooth fit to the
+residuals, intended to make it easier to identify a trend. The blue
+lines track the outer quantiles of the residuals, and emphasize
+patterns. **Left:** The funnel shape indicates heteroscedasticity.
+**Right:** The response has been log transformed, and there is now no
+evidence of heteroscedasticity.](q3.png)
+
+## 4. Outliers
+
+An outlier is a point for which $y_i$ is far from the value predicted by
+the model. Outliers can arise for a variety of reasons, such as
+incorrect recording of an observation during data collection. It is
+typical for an outlier that does not have an unusual predictor value to
+have little eﬀect on the least squares ﬁt. However, even if an outlier
+does not have much eﬀect on the least squares ﬁt, it can cause other
+problems; it may affect the RSE. Since the RSE is used to compute all
+conﬁdence intervals and p-values, such a dramatic increase caused by a
+single data point can have implications for the interpretation of the
+ﬁt. Similarly, inclusion of the outlier causes the $R^2$ to decline.
+Residual plots can be used to identify outliers. But in practice, it can
+be diﬃcult to decide how large a residual needs to be before we consider
+the point to be an outlier. To address this problem, instead of plotting
+the residuals, we can plot the studentized residuals, computed by
+dividing each residual $e_i$ by its estimated standard error.
+Observations whose studentized residuals are greater than 3 in absolute
+value are possible outliers.
+
+![The least squares regression line is shown in red, and the regression
+line after removing the outlier is shown in blue. **Center:** The
+residual plot clearly identifies the outlier. **Right:** The outlier has
+a studentized residual of 6; typically we expect values between −3 and
+3.](q4.png)
+
+## 5. High Leverage Points
+
+We just saw that outliers are observations for which the response $y_i$
+is unusual given the predictor $x_i$. Conversely, observations with high
+leverage have an unusual value for $x_i$. In fact, high leverage
+observations tend to have a sizable impact on the estimated regression
+line. It is cause for concern if the least squares line is heavily
+affected by just a couple of observations, because any problems with
+these points may invalidate the entire fit. For this reason, it is
+important to identify high leverage observations. In a simple linear
+regression, high leverage observations are fairly easy to identify,
+since we can simply look for observations for which the predictor value
+is outside of the normal range of the observations. But in a multiple
+linear regression with many predictors, it is possible to have an
+observation that is well within the range of each individual predictor's
+values, but that is unusual in terms of the full set of predictors. We
+will denote the leverage at $x_i$ as $h_i$. For a simple linear
+regression, $$
+h_i=\frac{1}{n}+\frac{\left(x_i-\bar{x}\right)^2}{\sum_{i \prime=1}^n\left(x_{i,}-\bar{x}\right)^2}
+$$ where the index $i^{\prime}$ indicates that the sum is taken over all
+integers 1 to $n$ except for $i$ itself. It is clear from this equation
+that $h_i$ increases with the distance of $x_i$ from $\bar{x}$. There is
+a simple extension of $h_i$ to the case of multiple predictors:
+
+The leverage statistic $h_i$ is always between $1 / n$ and 1 , and the
+average leverage for all the observations is always equal to
+$\frac{p+1}{n}$. So if a given observation has a leverage statistic that
+greatly exceeds $\frac{p+1}{n}$, then we may suspect that the
+corresponding point has high leverage. We may also look at the graph of
+studentized residuals versus $h_i$ to see if there are any observations
+with a high leverage. A point that has both a high leverage and a high
+studentized residual, would be an outlier as well as a high leverage
+observation. This is a particularly dangerous combination!.
+
+![**Left:** Observation 41 is a high leverage point, while 20 is not.
+The red line is the fit to all the data, and the blue line is the fit
+with observation 41 removed. **Center:** The red observation is not
+unusual in terms of its $X_1$ value or its $X_2$ value, but still falls
+outside the bulk of the data, and hence has high leverage. **Right:**
+Observation 41 has a high leverage and a high residual.](q5.png)
+
+## 6. Collinearity
+
+Collinearity refers to the situation in which two or more predictor
+variables are closely related to one another.\
+The presence of collinearity can pose problems in the regression
+context, since it can be diﬃcult to separate out the individual eﬀects
+of collinear variables on the response. In other words, since limit and
+rating tend to increase or decrease together, it can be diﬃcult to
+determine how each one separately is associated with the response,
+balance.
+
+![Scatterplots of the observations from the Credit data set. **Left:** A
+plot of age versus limit. These two variables are not collinear.
+**Right:** A plot of rating versus limit. There is high
+collinearity.](q6.png)
+
+Since collinearity reduces the accuracy of the estimates of the
+regression coefficients, it causes the standard error for
+$\hat{\beta}_j$ to grow. Recall that the $t$-statistic for each
+predictor is calculated by dividing $\hat{\beta}_j$ by its standard
+error. Consequently, collinearity results in a decline in the
+$t$-statistic. As a result, in the presence of collinearity, we may fail
+to reject $H_0: \beta_j=0$. This means that the power of the hypothesis
+test - the probability of correctly power detecting a non-zero
+coefficient - is reduced by collinearity. It is desirable to identify
+and address potential collinearity problems while fitting the model. A
+simple way to detect collinearity is to look at the correlation matrix
+of the predictors. An element of this matrix that is large in absolute
+value indicates a pair of highly correlated variables, and therefore a
+collinearity problem in the data. Unfortunately, not all collinearity
+problems can be detected by inspection of the correlation matrix: it is
+possible for collinearity to exist between three or more variables even
+if no pair of variables has a particularly high correlation. We call
+this situation **multicollinearity**.
+
+Instead of inspecting the correlation matrix, a better way to assess
+multicollinearity is to compute the **variance inflation factor (VIF)**.
+The VIF is the ratio of the variance of $\hat{\beta}_j$ when fitting the
+full model divided by the variance of $\hat{\beta}_j$ if fit on its own.
+The smallest possible value for VIF is 1 , which indicates the complete
+absence of collinearity. Typically, in practice, there is a small amount
+of collinearity among the predictors. As a rule of thumb, a VIF value
+that exceeds 5 or 10 indicates a problematic amount of collinearity. The
+VIF for each variable can be computed using the formula
+
+$$
+V I F\left(\hat{\beta}_j\right)=\frac{1}{1-R_{X_j \mid X_{-j}}^2}
+$$ where $R_{X_j \mid X_{-j}}^2$ is the $R^2$ from a regression of $X_j$
+onto all of the other predictors. If $R_{X_j \mid X_{-j}}^2$ is close to
+one, then collinearity is present, and so the VIF will be large.
+
+### Example: Boston Data set Cts...
+
+```{r}
+# fit a linear model with all predictors
+fit = lm(medv~., data=Boston)
+summary(fit)
+```
+
+To check the diagnostic plots:
+
+```{r}
+par(mfrow=c(2,2))
+plot(fit)
+```
+
+To check multicollinearity:
+
+```{r}
+library(car)
+vif(fit)
+```
+
+Here `rad` and `tax` have high VIF values, indicating they are highly
+correlated with at least one of the other predictors.
+
+Now let's try to remove the variable`rad` and recheck the VIF number (We
+usually remove one variable at time and re-check the VIF numbers).
+
+```{r}
+fit = lm(medv~.-rad, data=Boston)
+summary(fit)
+
+vif(fit)
+```
+
+Now all the VIF numbers for the variables are less than 5.

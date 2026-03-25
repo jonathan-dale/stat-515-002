@@ -1,0 +1,638 @@
+---
+title: "Introduction to R and RStudio"
+author: "Dr. Isuru Dassanayake"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+R is a free software environment for statistical computing and graphics.  It compiles and runs on a wide variety of UNIX platforms, Windows, and MacOS.
+R can be downloaded from CRAN (Comprehensive R Archive Network) at http://cran.r-project.org/.  One should prefer the sixty-four bit version, which can handle arbitrarily large amounts of data.
+
+## General Remarks:
+
+•	Commands in R are written following the $">"$ prompt.  Once we are done writing the command, we hit Enter to move to the new command line.  The space in which we put the commands is called the console.  
+
+•	R is interactive – results can be seen one command at a time.  If there is an incorrect entry in a line of code, R will immediately let us know of this fact – we do not have to wait until all the commands are entered.
+
+•	R is case-sensitive.  So, uv, Uv, uV, and UV are all different variables.
+
+•	We can always add comments to an R program by starting the statement with the # symbol.
+•	To repeat a line of code, we just press the up arrow key.  
+
+•	To interrupt a command, we have to press Esc.
+
+•	To get help on any function we type ? and the name of the function.  For example, to get help on the function mean, we type:
+
+```{r,eval=FALSE}
+>?mean
+```
+
+For operations we use $‘ ‘$.  For example, to get help on $+,$ we type:
+
+```{r,eval=F}
+>? '+'
+```
+
+•	There may be occasions when we have only a sense of the function we want to use.  In that case, we can look up the function by using a part of its name along with the function "apropos".  For example, say we do not know the exact name of the mean function, but we think it starts with m, e , and a:
+
+```{r,eval=FALSE}
+>apropos (“mea”)
+```
+               
+•	To copy the session commands and their results to a Word document, simply select and highlight these lines, and Copy and Paste.  To copy a graph, after creating the graph, click on Export and then choose the option Copy to Clipboard.  Click on Copy Plot.   Then go to the Word document and paste.  
+
+
+
+### RStudio
+RStudio is an integrated development environment (IDE) for R, that is, it is a software application that consolidates the basic tools needed to write and test R programs.  
+To download Rstudio, after downloading R, go to 
+http://www.rstudio.com/download
+
+### Basic Operations and Functions: 
+As usual, we use + for addition, - for subtraction, * for multiplication, / for division, ^ for powers, and sqrt for the square root.  For the rth root of a number x, we simply write x^(1⁄r). 
+To get the whole number part in a division we write x%/%y and to get the remainder we write $x%/%y$.  So for example,
+
+```{r}
+17%/%3
+
+```
+
+and
+
+```{r}
+17%%3
+```
+
+Thus,
+```{r,eval=FALSE}
+x = y*(x%/%y)+(x%%y)
+17 = 3*(17%/%3) + (17%%3)
+```
+
+R follows the usual order of operations: parenthesis, exponents, multiplications, and divisions from left to right, and finally additions and subtractions from left to right. 
+
+We can write some common functions very easily in R.  We use abs(x) for the absolute value, exp(x) for e^x, and log(x) for the natural logarithm of x.  To write log_a (x), we write loga(x).  So, the common logarithms, log_10 (x), is written as log10(x).   To write e, the base of the natural logarithmic function, we write exp(1).  
+
+We write pi for $\pi$.  The trigonometric functions are written as $sin(x)$, $cos(x),$ tan⁡($x), etc.  Here, the argument x given in radians.  The inverse trigonometric functions are written as acos(x), asin(x), atan(x), etc.  The function atan2(y,x) gives the angle (in radians) from the positive x-axis to the vector (x,y). 
+
+Recall that the floor function is the function that takes as input a real number x and gives as output the greatest integer less than or equal to x.  It is denoted as ⌊x⌋.  Similarly, the ceiling function gives the least integer greater than or equal to x, and is  denoted as $⌈x⌉$.  Thus, for example,
+                      ⌊3.2⌋=3
+                      ⌈3.2⌉=4
+Of course, for any integer n, ⌊n⌋=⌈n⌉=n    
+
+To get these functions in R, we write:
+
+```{r,eval=FALSE}
+floor(x)
+
+#and
+
+ceiling(x)
+
+```
+&nbsp;
+#### Basic Arithmetic Statements:
+
+To perform any arithmetic operation, at the > prompt, we write down the operational statement and hit enter.
+
+```{r}
+1 + 2*3 - 15/3 
+
+log(3*5-7)
+
+```
+
+&nbsp;
+
+#### Variables
+
+A variable name can be any combination of alphanumeric characters along with period "." and underscore "_".  It must start with a letter.
+To assign a value to a variable we use <- symbol (or =). Thus, to assign the value 3 to variable x, we write:
+
+```{r}
+x <- 3
+
+#or 
+
+x = 3
+```
+
+if then we write x we get its value:
+```{r}
+x
+```
+
+Assignments can be done simultaneously:
+```{r}
+a <- b <- 7
+
+a
+b
+```
+
+Another method is to use the assign function:
+
+```{r}
+assign ('h', 4)
+
+h
+```
+
+
+
+To remove a variable we use the remove or rm function:
+```{r}
+j = 4
+
+j
+```
+
+
+```{r,error=TRUE}
+rm(j)
+
+j
+```
+
+&nbsp;
+
+### Data Types
+
+We will discuss numeric, character (string), and logical (true/false) data.
+
+&nbsp;
+
+#### Numeric Data
+
+Any real number stored in a variable is automatically assumed to be numeric. To test whether a variable is numeric we use the "is.numeric" function.  So, if for example, x is a numeric variable,
+
+```{r}
+is.numeric(x)
+```
+
+
+A sub-category of numeric is integer.  To set an integer value to a variable, it is necessary to append the value with an "L".  To check whether a variable is integer, we use the is.integer function.
+
+```{r}
+g = 5L 
+g
+
+#or
+l = as.integer(5)
+l
+
+is.integer(g)
+```
+
+&nbsp;
+
+#### Character Data 
+
+Character data is always entered in quotes:
+
+```{r}
+x = "table"
+
+x
+```
+
+
+Notice in this case the answer is also given in quotes.
+
+&nbsp;
+
+#### Logicals
+
+These are ways of representing data that can be either true or false.  Numerically TRUE is same as 1 and FALSE is same as 0.
+
+```{r}
+TRUE*5
+
+FALSE*7
+```
+
+
+We can test whether a data is logical by using the "is.logical" function
+
+```{r}
+k = TRUE
+
+class(k)
+
+is.logical(k)
+```
+
+&nbsp;
+
+#### Binary Comparisons
+
+a is equal to b:  a = = b
+
+a is less than b:  a < b  
+
+a is greater than b:  a > b 
+
+a is less than or equal to b:  a < = b 
+
+a is greater than or equal to b:  a>=b
+
+a is not equal to b: a != b
+
+
+```{r}
+# Let's check if 2 is equal to 3
+
+2==3
+```
+
+```{r}
+# Let's check if 4 is not equal to 5
+
+4!=5
+```
+
+&nbsp;
+
+### Vectors
+
+In R, a vector is defined as a collection of elements, all of which are of the same type.  There is no distinction between a column vector and a row vector.
+
+The most common way to create a vector is with c (c stands for combine) function: to create a vector $ x_1,x_2,…,x_k$ we write: 
+$c(x_1,x_2,…,x_k)$
+So, for example:
+
+```{r}
+x = c(1,2,3,4,5)
+x
+```
+
+
+```{r}
+y = c ("alpha","beta","gamma","delta")
+y
+```
+
+Suppose $x = c(x_1,x_2,…,x_k)$.  
+
+If we write:
+$y = c(y_1,…,y_j,x)$
+
+this will give us the vector $(y_1,…,y_j, x_1,x_2,…,x_k)$.
+
+So if,
+
+```{r}
+x = c(7,8,9,10)
+
+y= c(1,2,3,4,5,6,x)
+
+z = c("a","b","c")
+
+m = c(x,z)
+
+n =as.integer(x)
+n
+class(n)
+```
+
+&nbsp;
+
+#### The : Operator 
+
+If a vector is formed by consecutive numbers from a to b, a<b, we can simply write: a:b,
+
+So for example:
+
+```{r}
+1:6
+
+-2:2
+
+# also in decreasing order from b to a ==>  b:a
+
+10:2
+
+# Also,
+
+x = 1:9
+x
+
+y = 10*x # every element on x will be multiplied by 10
+
+y
+
+```
+
+&nbsp;
+
+#### Vector Operations
+
+Operations are applied to each element of the vector automatically, without the need to loop through the vector. 
+
+To multiply each element of a vector by a number n, enter the vector in x and then x*n.
+
+Similarly we can perform operations x+n, x⁄n, x^n, or sqrt (x).
+
+```{r}
+x = c(3,7,11,25)
+x
+
+7*x
+
+sqrt(x)
+```
+
+&nbsp;
+
+If we have vectors of equal length saved in x and y, we can perform the operations x+y, x-y, xy, x/y and x^y.
+
+```{r}
+x = c(1,3,5)
+y = c(2,4,6,8,6,3)
+
+x+y
+
+x^y
+```
+
+Also,
+
+```{r}
+x = c(1,2,3,4)
+y = c(2,3,0,5)
+
+x/y
+```
+Note that R denotes division by zero as Inf.
+
+&nbsp;
+
+### Data.frame
+
+
+A data.frame is a rectangular collection with variables in columns and observations in rows.  In a data.frame, columns are actually vectors, each of which must have the same length. 
+
+To create a data.frame, we use the data.frame function:
+
+
+```{r}
+x = 12:4
+y = 8:0
+z = c("a","b","c","d","e","f","g","h","i")
+
+dat = data.frame(x,y,z) # all the vectors should be the same length.
+dat
+
+class(dat)
+str(dat)
+
+```
+
+Therefore, we created a 9×3 data.frame.
+
+Alternatively, we could assign names to the variables:
+
+```{r}
+dat  = data.frame("Firs tNum" = x,"SecondNum" = y, "Letter" = z)
+
+
+dat
+```
+
+The nrow and ncol functions give us the number of rows and columns, respectively:
+
+```{r}
+nrow(dat)
+
+ncol(dat)
+```
+
+&nbsp;
+
+The dim function gives both the number of rows and the number of columns:
+```{r}
+dim(dat) 
+```
+Here the first letter is the number of rows and the second number is the number of columns.
+
+&nbsp;
+
+Usually, a data .frame has far too many rows to fit in one screen.  In this case, we may want to view just 
+the first few or last few rows.  To this end, we use the head and the tail functions:
+
+```{r}
+head(dat) # to see the top of the data set
+tail(dat) # to see the bottom of the data set
+
+head(dat, n=3) # to see just the top three rows
+tail(dat, n=4) # to see just the bottom 4 rows
+
+```
+
+&nbsp;
+
+
+##### Examples:
+
+1. Combine the following vectors and identify the data type of each vector
+
+```{r}
+n = c(1,2,3)
+s = c("aa","bb","cc","dd","ff")
+c(n,s)
+
+```
+
+
+&nbsp;
+
+2. How many elements are there in the following vector:
+
+```{r}
+ a = c(65,45,2,54,87,4,32,54,56,87,8,65,3,56,67,7,8765,34,3,43,65,76,
+       45,34,3,65,75,65,54,43,54,76,87,9,64,35,46,68,79,68,64,3,57,88,9,79,5)
+
+length(a)
+```
+
+&nbsp;
+
+#### Recycling Rule
+
+If two vectors are of unequal length, the shorter one will be recycled in order to match the longer vector. For example, the following vectors u and v have different lengths, and their sum is computed by recycling values of the shorter vector u.
+```{r}
+u = c(10,20,30)
+v = c(1,2,3,4,5,6,7,8,9)
+
+u+v
+```
+
+* Important : Longer object length should be a multiple of the shorter objects length.
+
+&nbsp;
+
+#### Vector Index
+
+&nbsp;
+
+```{r}
+s = c("aa","bb","cc","dd","ff")
+
+```
+
+* What is the 3rd element of s?
+* What is the 15th element of s?
+* Delete the 4th element of s
+
+
+
+```{r}
+#Answer:
+
+s[3] # Extracting 3rd element from S
+s[15]
+
+e =s[-4]
+
+```
+
+&nbsp;
+
+Similarly,
+```{r}
+s[c(2, 3)] 
+
+s[c(2, 3, 3)] 
+
+s[c(2, 1, 3)] 
+
+s[2:4]
+```
+
+&nbsp;
+
+
+
+### Matrices
+
+&nbsp;
+
+Matrices are similar to data.frames except that all elements must be of the same type, most commonly, numeric.  To construct this data structure we use the matrix function.  So for example, to write the matrix;
+
+
+we write:
+```{r}
+A = matrix(c(1,2,3,6,9,15),
+           nrow = 2,    # number of rows
+           ncol = 3,     # number of columns
+           byrow = TRUE # fill the matrix by rows
+           ) 
+A
+```
+you can include either nrow or ncol or both.
+
+
+
+An element at the mth row, nth column of A can be accessed by the expression A[m, n].
+
+```{r}
+A[2,3]  # extracting the element at the 2nd row, 3rd column
+
+A[,3]  # Extracting the 3rd column
+
+A[2,]  # Extracting the 2nd column
+
+
+A[,c(1,3)]  # Extracting the 1st and 3rd Column
+```
+
+
+&nbsp;
+
+
+To get the transpose of a matrix we use:
+```{r}
+B = t(A)
+B
+```
+
+Given any two matrices A and B, we can perform the operations A+B and A-B as long as the number of rows and columns agree.  
+
+
+* Combine the matrices B and C:
+
+```{r}
+C = matrix (c(4,6,8), nrow = 3)
+
+cbind(B,C)
+
+```
+
+
+* Combine matrices B and D:
+
+```{r}
+D = matrix(c(12,53,65,77,35,98,89,85), ncol = 2, byrow = T)
+
+rbind(B,D)
+```
+
+
+Two multiply two matrices A,B (as long as the number of columns of A is equal to the number of rows of B) we use,
+```{r}
+A%*%B
+```
+
+We can use the colnames, rownames, nrow, ncol, and dim functions with matrices as well.
+
+The function "det (A)" gives us the determinant of a matrix A, and the function "solve(A)" gives us A^(-1), the inverse of A.
+
+
+&nbsp;
+
+
+#### Change Working Directories
+
+```{r,eval=F}
+getwd()  #get current working directory
+
+setwd("new path") # Set working directory 
+```
+Note that the forward slash should be used as the path separator even on Windows platform.
+
+&nbsp;
+
+
+#### Data Import 
+
+```{r}
+#From Text
+ # can use the in-built function
+```
+
+```{r}
+#From Excel
+ # can use the in-built function
+```
+
+```{r}
+#From CSV (comma separated values)
+
+# dat_1 = read.csv("/Users/idassana/Desktop/for 515/Week 1/electronic-card-transactions-july-2021.csv")
+
+```
+
+
+
+
+
+
+
+
+
+
+ 

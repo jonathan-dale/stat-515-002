@@ -1,0 +1,71 @@
+---
+title: "Homework 2"
+author: "Dr. Isuru Dassanayake"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  word_document: default
+  html_document: default
+always_allow_html: yes
+---
+
+Instructions: Include all codes and R-outputs that are necessary for each question. Submission: You MUST submit a PDF file.
+
+***All visualizations must be well-labeled, properly formatted, and thoughtfully designed with appropriate color choices. Ensure that they adhere to the data visualization principles discussed in class. Each visualization should be of high quality and effectively communicate the intended insights.***
+
+## Question 1:
+
+Please refer the following data visualization about "Negative Economic Impact of COVID-19 on Tourism". For more information, please see the attached article with the HW assignment.
+
+![](tourism.png){width="488"}
+source: https://howmuch.net/articles/high-tourism-countries-income-loss-due-to-pandemic
+
+
+Please answer the following questions and interpret your findings for each part:
+
+a.  Create a single bar graph displaying the income for each country listed above, with separate bars for 2019 and 2020 positioned side by side for comparison.
+
+b.  Rearrange the bar graph (from part a) so that countries are ordered in ascending order based on their 2019 income.
+
+c.  Create a slope chart to visualize the income differences between 2019 and 2020 for each country. What do you observe?
+
+d.  Create a bar chart highlighting the income differences among countries due to the impact of COVID-19, with bars colored based on the magnitude of the differences.
+
+```{r question-1}
+
+
+
+
+```
+
+
+
+
+
+## Question 2:
+
+Go through the "Pre-requisite" on Canvas and other resources and answer the following questions in your own words:
+
+a)  Explain what is a 'Point Estimator' and a ' Interval Estimator'.
+
+b)  Do you prefer the 'Point Estimator' or the ' Interval Estimator'. Explain by giving examples.
+
+c)  What is a 'Confidence Interval' and what does 95% confidence interval mean?
+
+d)  What is 'Hypothesis Testing'?
+
+e)  How does Hypothesis testing used in Data science. Explain by using real-life examples.
+
+f)  What are the potential errors in Hypothesis testing ?
+
+g)  Suppose that, in a hypothesis test, the null hypothesis is in fact true. Is it possible to make a 'Type 2' error. Explain.
+
+h)  Explain the difference between the 'significance level' and the 'confidence level' and identify the relationship between them.
+
+i)  What is the 'rejection region' in Hypothesis testing and what is the 'P-value' ?
+
+j) If it is important not to reject the true null hypothesis, should the hypothesis test performed at a smaller significance level? If the P-value for the hypothesis test is 0.044. Decide the significance level that you select and the decision.
+
+
+
+

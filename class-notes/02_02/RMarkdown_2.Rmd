@@ -1,0 +1,55 @@
+---
+title: "new_lesson"
+author: "dalej"
+date: "2026-02-02"
+output: html_document
+params:
+  data: "Hawaii"
+---
+
+```{r message=TRUE, warning=TRUE, paged.print=TRUE}
+# This is just some R code
+x <- 1:5
+mean(x)
+```
+
+```{r}
+plot(1:5)
+```
+
+```{r}
+library(ggplot2)
+print(params$data)
+
+```
+
+## Bash output
+
+```{bash}
+echo "params$data"
+ls -al ./
+```
+
+## Python output
+
+```{python}
+x = "Hello rmd world"
+print(x.split(' '))
+
+```
+
+
+
+
+## R markdown makes it easy to insert formating text like:
+  
+  - *italics*
+  - **bold**
+  - `code blocks`
+  - ect
+
+Also use latex to make equations: $E = mc^{2}$
+
+
+
+

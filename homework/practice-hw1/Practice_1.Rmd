@@ -1,0 +1,156 @@
+---
+title: "Practice Assignment"
+author: "Jonathan Dale"
+date: "2026-02-09"
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Instructions:** Create a ***pdf*** file with all relevant code and outputs using **Rmarkdown**. Do not submit any other file formats and do not print the entire dataset with the answers. *ONLY include relevant outputs.*
+
+### Q1) Use the 'carseats.csv' for the data set. Read the description of the dataset and answer the following questions.
+
+a)  Import the "carseats" dataset, look at the first few rows and inspect the data types of the variables in the dataframe.
+b)  Change the variables "ShelveLoc, urban, US" into a factor variables.
+c)  create a new variable called "profit" which stands for "Income - Advertising"
+d)  Check for missing data. If you have missing data remove the corresponding rows from the dataset.
+e)  How many "Good" shelving locations are there in the dataset?
+f)  How many stores are inside the USA? create a separate data frame containing all stores from USA. Name the data set as "stores_USA"
+g)  create another data set called "HighUrban_USSales" using 'stores_USA' data set. Where, sales are greater than 7 thousand and stores are located in Urban areas.
+h)  Remove "US" and "Urban" columns from the "HighUrban_USSales" dataset.
+i)  For one the above subset, write to a new CSV file
+
+---
+```{r echo=TRUE}
+library(readr)
+## a) Import the "carseats" dataset, look at the first few rows and inspect the data types of the variables in the dataframe
+carseats_1 <- read.csv("~/STATS/STAT-515-002/homework/hw-1/carseats-1.csv")
+str(carseats_1)
+head(carseats_1)
+
+## b)  Change the variables "ShelveLoc, urban, US" into a factor variables.
+
+    # View the structure first
+  str(carseats_1)
+    # Adjust the variables, convert into factor variable type
+  carseats_1$ShelveLoc = factor(carseats_1$ShelveLoc)
+  carseats_1$Urban = factor(carseats_1$Urban)
+  carseats_1$US = factor(carseats_1$US)
+    # Verify that the variables were converted into factor variables
+  str(carseats_1)
+
+
+# c)  create a new variable called "profit" which stands for "Income - Advertising"
+  
+    # Create the new variable
+  profit = carseats_1$Income - carseats_1$Advertising
+    # Then add the new variable to the data set
+  carseats_1$profit = profit
+    # verify
+  str(carseats_1)
+
+# d)  Check for missing data. If you have missing data remove the corresponding rows from the dataset.
+  
+    # Do we have missing data?
+  table(is.na(carseats_1)) ## Yes we have missing data!
+    # Create new dataset by removing the missing values from the original.
+  carseats_clean = na.omit(carseats_1)
+
+
+# e)  How many "Good" shelving locations are there in the dataset?
+    
+    # Take a subset with only the ShelveLoc = "Good"
+  Good_location = subset(carseats_1, ShelveLoc == "Good")
+    # Use nrow() to count the new subset
+  nrow(Good_location)
+
+    # Alternatively, just apply a filter and wrap with the nrow() function.
+  nrow(subset(carseats_1, ShelveLoc == "Good"))
+
+
+# f)  How many stores are inside the USA? create a separate data frame containing all stores from USA. Name the data set as "stores_USA"
+
+    # Create new dataframe as a subset of original
+  stores_USA = subset(carseats_1, US == "Yes")
+    # use nrow() function to count rows of the subset where US == "Yes"
+  nrow(stores_USA)
+
+
+# g)  create another data set called "HighUrban_USSales" using 'stores_USA' data set. Where, sales are greater than 7 thousand and stores are located in Urban areas.
+  
+    # Create new data frame
+  HighUrban_USSales = subset(stores_USA, Sales > 7 & Urban == "Yes")
+  
+
+# h)  Remove "US" and "Urban" columns from the "HighUrban_USSales" dataset.
+  
+    # Check the original structure, remove the columns, verify  
+  str(HighUrban_USSales)
+  HighUrban_USSales = subset(HighUrban_USSales, select = -c(US, Urban))
+  str(HighUrban_USSales)
+
+
+
+# i)  For one the above subset, write to a new CSV file
+    ## Write to file removing the row column
+  write.csv(HighUrban_USSales, "HighUrban_USSales.csv", row.names = F)
+
+
+```
+
+
+
+
+### Q2) See the following code of a function and explain what it does. Suggest a suitable name for the function and rename. Demonstrate how the function works when you have numerical data and character data.
+
+The code below defines a function named 'function1' that takes a single argument x. If the vector, x, has length 1 or less, the function returns NULL. If length greater than 1, the function returns a new vector with all the elements except the last one. 
+I would re-name this to remove_last_element() to better describe what it dose. 
+
+```{r,eval=FALSE}
+function1 <- function(x) {
+  if (length(x) <= 1) return(NULL)
+  x[-length(x)]
+}
+```
+
+### Q3) Write a function to compute the sample variance of a numerical vector. Use the equation of the variance to write the function.
+
+```{r}
+sample_variance = function(x) {
+  # Validate the input
+  if (! is.numeric(x)) {
+    stop("Must be numeric vector")
+  }
+  if (length(x) < 2) {
+    stop("Input vector must have at least 2 elements to compute sample variance.")
+  }
+  # Input validation sources from Google AI overview.
+  
+  # Calculate number of observations, mean, sum of squared differences, and variance
+  n <- length(x)
+  xbar <- mean(x, na.rm = TRUE)
+  sum_sq_diff = sum((x - xbar)^2)
+  sample_variance = sum_sq_diff / (n -1)
+  return(sample_variance)
+}
+
+
+my_sample_vector = c(10, 12, 15, 11, 14, 13) # Create a sample vector
+my_sample_variance_function_call = sample_variance(my_sample_vector) # Call the function, store results in variable
+cat("Manual variance function:", my_sample_variance_function_call, "\n" )
+
+## Lets verify the results with the built in function...
+built_in_sample_variance = var(my_sample_vector)
+cat("Built in sample variance var():", built_in_sample_variance, "\n")
+
+
+```
+
+
+

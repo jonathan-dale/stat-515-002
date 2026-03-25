@@ -1,0 +1,573 @@
+---
+title: 'Creating maps'
+author: "Dr. Isuru Dassanayake"
+date: "`r Sys.Date()`"
+output: rmdformats::robobook
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+```
+
+A choropleth map is a type of thematic map in which a set of pre-defined areas is colored or patterned in proportion to a statistical variable that represents an aggregate summary of a geographic characteristic within each area, such as population density or per-capita income.
+
+First let's get familiar with the `map_data` function. This function can easily turn data from the `maps` package into a data frame that is suitable for plotting with `ggplot2`. This functions contains maps of several countries including 'France', 'Italy' and many maps of 'USA'. Please see the description to learn more about this.
+
+```{r}
+library(tidyverse)
+```
+
+```{r echo=FALSE}
+hw <- theme_gray()+ theme(
+  plot.title=element_text(hjust=0.5),
+  plot.subtitle=element_text(hjust=0.5),
+  plot.caption=element_text(hjust=-.5),
+
+  strip.text.y = element_blank(),
+  strip.background=element_rect(fill=rgb(.9,.95,1),
+    colour=gray(.5), linewidth =.2),
+
+  panel.border=element_rect(fill=FALSE,colour=gray(.70)),
+  panel.grid.minor.y = element_blank(),
+  panel.grid.minor.x = element_blank(),
+  panel.spacing.x = unit(0.10,"cm"),
+  panel.spacing.y = unit(0.05,"cm"),
+
+# axis.ticks.y= element_blank()
+  axis.ticks=element_blank(),
+  axis.text=element_text(colour="black"),
+  axis.text.y=element_text(margin=margin(0,3,0,3)),
+  axis.text.x=element_text(margin=margin(-1,0,3,0))
+)
+```
+
+# Tutorial
+
+In this example let's try to extract data from a "world map" and try to plot it using `ggplot`.
+
+```{r}
+#extracting data and saving as a tibble
+world_tbl <- map_data("world") %>% as_tibble()
+world_tbl
+```
+
+Now with the `world_tbl`, let's try to visualize it.
+
+```{r}
+world_base <- world_tbl %>%
+  ggplot() +
+  geom_map(
+    aes(long, lat, map_id = region),
+    map = world_tbl,
+    color = "gray80", fill = "gray30", size = 0.3) + hw
+world_base
+```
+
+Notice that this is a "Mercator" Projection of the 'World Map'. But if you want a different projection, such as 'Orthogonal Projection" you can use the following commands. In order to learn about different maps projections can be used in `ggplot2` please use the following this [link.](https://rdrr.io/cran/mapproj/man/mapproject.html)
+
+```{r}
+world_base +
+  coord_map("ortho", orientation = c(39, -98, 0))
+```
+
+By changing the `orientation` coordinates above, you should be able to rotate the globe on X, Y and Z axes.
+
+Now let's look at a map of 'USA' with 'orthogonal projection'.
+
+```{r}
+usa_tbl <- map_data("state") %>% as_tibble()
+
+usa_tbl %>%
+  ggplot(aes(long, lat, map_id = region)) +
+  geom_map(
+    map = usa_tbl,
+    color = "gray80", fill = "gray30", size = 0.3) +
+  coord_map("ortho", orientation = c(39, -98, 0)) +hw
+```
+
+# Example 1 : EU Vaccination Data
+
+For this example let's look at the `EUvaccine.csv` data set. This data set contains EU countries and vaccinated percentage of a certain drug.
+
+```{r}
+EUvax <- read.csv("EUvaccine.csv") 
+```
+
+Let's try to plot the 'percentage vaccinated' on a world map. Let's get the world data.
+
+```{r}
+mapdata <- map_data("world") %>% as_tibble()
+```
+
+Now let's create a single data set by combining both above data set by their common variable `region`. We can use a `left_join` to combine both data sets.
+
+```{r}
+(mapdata <- left_join(mapdata, EUvax, by="region"))
+```
+
+Since `EUvax` only contains countries from the European union, 'perc_vaccinated' returns `NA` for other countries. Let's remove those entries with the missing values so we can get a visualization only with EU countries.
+
+```{r}
+(mapdata1 <-mapdata %>% filter(!is.na(mapdata$Perc_vaccinated)))
+```
+
+Now the data set only contains entries from EU countries. Let's produce the map.
+
+```{r}
+map1 <- ggplot(mapdata1, aes( x = long, y = lat, group=group)) +
+  geom_polygon(aes(fill = Perc_vaccinated), color = "black") +hw
+map1
+```
+
+Now more formatted version of the above map with different colors.
+
+```{r}
+map2 <- map1 + 
+  scale_fill_gradient(name = "% Vaccinated", low = "yellow",
+                                   high =  "red", na.value = "grey50")
+map2
+```
+
+# Example 2: Republican Voting % in 1976 by State
+
+For this example we will use voting data from "1976 US Presidential Election". The data set is named as `votes.repub` stored in `maps` package. This data set contains the percentage republican votes in elections from 1856 - 1976.
+
+Since we are using the 1976 election data we need to extract the necessary column. Observe the data set below:
+
+Here the goal is to develop a map of US states colored with Republican and Democrats voting proportions.
+
+```{r}
+
+dat =maps::votes.repub
+head(dat)
+```
+
+First let's get the 'USA' map from `map_data` and save it as a tibble.
+
+```{r}
+usa_tbl <- map_data("state") %>% as_tibble()
+```
+
+#### Important:
+
+Notice the following differences from above two data sets:
+
+-   'voters' data set have the states names as 'row names'. When converted into a `tibble` these names will be deleted. Therefore, need to extract the row names and need to be saved as a new variable called `state`.
+
+-   Need to extract the 1976 voting data and change the column name as \`repub_prop' and need to convert the 'percentages' to 'proportions'.
+
+-   Since we need to join the two data set by the state, the 'state' variable in both data sets needs to be in the same format. In the Voting data set, state name start with a upper case letter, therefore we need to convert all letter to lower case, to match with map data (You can have different variable names).
+
+The following commands address all the above mentioned issues. The formatted data set will be named as `republican_voting_tbl`.
+
+```{r}
+republican_voting_tbl <- maps::votes.repub %>%
+  as_tibble(rownames = "state") %>% # saving row names
+  select(state, "1976") %>% # selecting 1976 data
+  rename(repub_prop = "1976") %>% # renaming the column
+  mutate(repub_prop = repub_prop / 100) %>% # converting % to proportions
+  mutate(state = str_to_lower(state)) # to lower case
+```
+
+Now let's join the two data sets.
+
+```{r}
+usa_voting_tbl <- usa_tbl %>%
+  left_join(republican_voting_tbl, by = c("region"= "state"))
+
+usa_voting_tbl 
+```
+
+Now let's create the visualization.
+
+Here for Republicans we use `red` and for Democrats we use `blue`. Here we create a color gradient based on the republican voting proportions. If the proportion is grater than 0.5 Republicans have won that state, and if it is less than 0.5 Democrats have won that state.
+
+-   proportion closer to 1 : Intense Red color
+
+-   proportion closer to 0.5: White color
+
+-   proportion closer to 0 : Intense Blue color
+
+```{r}
+usa_voting_tbl %>%
+  ggplot(aes(long, lat, group = group)) +
+  geom_map(
+    aes(map_id = region),
+    map = usa_tbl,
+    color = "gray80", fill = "gray30", size = 0.3) +
+  coord_map("ortho", orientation = c(39, -98, 0)) +
+  geom_polygon(aes( fill = repub_prop), color = "black") +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red",
+                       midpoint = 0.5, labels = scales::percent) +
+  theme_minimal() +
+  labs( title = "Voting Republican in 1976",x = "", y = "", fill = "") +
+  theme(
+    plot.title = element_text(size = 26, face = "bold", color = "red3"),
+    legend.position = "bottom")
+```
+
+# Example 3: 2012 US Presidential election by county
+
+For this example we will use 2012 US presidential data by county. The data set is named `pres.election.csv`. This data set contains information about 2012 and 2016 US presidential elections. Since we are interested in 2012 election, let's take a subset that contains the variables, `area_name`, `Obama` and `Romney`.
+
+```{r}
+library(maps)
+```
+
+```{r}
+df = read.csv("pres.election.csv")
+df <- subset(df, select = c(Obama, Romney, area_name)) # subset
+```
+
+For this example we will look at the election data at county level. Therefore, from the `maps` let's extract the county data and use an join function to combine the data sets. We use `state` map data to add border lines on top of county data.
+
+```{r}
+county_df <- map_data("county") #county data
+state_df <- map_data("state") #state data
+```
+
+First observe the data sets `df` and `county_df`. We need to join them by the 'county' name. But notice that the formatting is different for both data sets.
+
+We need to have the same format to join these data sets. Therefore, let's try to format both of the data sets.
+
+Notice the following differences:
+
+-   `df` : county name start with upper case letters: Make all letters to lower case.
+
+-   `df` : area_name has the word 'County' for all the entries: delete the word 'County'.
+
+-   `df` : some county names have two words and a space between them: delete the space.
+
+-   `df` : some county names have "[.]" symbol: delete the symbol.
+
+-   `county_df` : some county names have two words and a space between them: delete the space.
+
+To identify patterns of characters, we will use `gsub` function. `gsub(pattern, replacement, x)`.
+
+```{r}
+df$area_name <- tolower(df$area_name) # changing area names to lower case 
+df$area_name <- gsub(" county", "", df$area_name) # removing the name county
+df$area_name <- gsub(" ", "", df$area_name) # removing the spaces in the name
+df$area_name <- gsub("[.]", "", df$area_name) # removing '.' from names
+
+county_df$subregion <- gsub(" ", "", county_df$subregion)
+```
+
+Now let's convert the vote proportions that each candidate got to percentages.
+
+```{r}
+df = df %>% mutate(Obama = Obama*100, Romney = Romney*100)
+```
+
+Unlike example 2, here we have two sets of numerical data for two candidates. Dealing with two sets of vectors for maps would be less optimal. Therefore, let's try to combine this two vectors in such a way that we should be able to identify the winner in each county and their percentage.
+
+Newly formed vector will only contain the winners' percentage and to differential the two candidates we will use a 'Positive' percentages for 'Obama' and 'Negative' percentages for 'Romney'. We will consider the magnitude of the percentages for the color gradients and '+' and '-' to identify each political party.
+
+```{r}
+for (i in 1:length(df[,1])) 
+  {
+    if (df$Obama[i] > df$Romney[i]) {
+      df$Percent[i] = df$Obama[i]   # saving the winning percentage 
+                                    #as the 'Percent'
+    } else {
+      df$Percent[i] = -df$Romney[i] # differentiating between each winner
+    }
+  }
+```
+
+Renaming the variables in `df`.
+
+```{r}
+names(df) <- c("Obama", "Romney", "subregion", "Percent")
+```
+
+Now let's join the two data sets with `inner_join` and delete the duplicate entries if there are.
+
+```{r}
+US <- inner_join(county_df, df, by = "subregion") # lots of duplicated entries
+US <- US[!duplicated(US$order), ] # removing the duplicates entries
+```
+
+Usually Democrat Party is represented by the 'Blue' color and Republican Party is represented by 'Red' color. Here 'Obama' is the Democrat candidate and 'Romney' is the Republican candidate.
+
+Here let's try to come up with a color gradient/ramp to represent both candidates by their party and the winning percentages.
+
+```{r}
+red <- colorRampPalette(c("darkred", "red2","mistyrose"))(200)
+blue <- colorRampPalette(c("lightskyblue","royalblue","navy"))(200)                      
+```
+
+Now let's use ggplot to come up with the map.
+
+```{r}
+ggplot(US, aes(long, lat, group = group)) +
+  geom_polygon(aes(fill = Percent),
+               colour = alpha("white", 1/2), size = 0.05)  +
+  geom_polygon(data = state_df, colour = "white", fill = NA) + # adding state borders
+  ggtitle("2012 US Election") +
+  scale_fill_gradientn(colours=c(red,"white", blue))  +
+  theme_void()
+```
+
+
+# Example 4: Creating maps using 'shapflies' by library 'sf'
+
+The **shapefile** format is a geo-spatial vector data format for geographic information system (GIS) software.
+
+The shapefile format stores the geometry as primitive geometric shapes like points, lines, and polygons. These shapes, together with data attributes that are linked to each shape, create the representation of the geographic data.
+
+We will use a shapefile of Brazil to plot the population density of its Municipalities.
+
+First, load the following libraries.
+
+```{r}
+library(ggplot2)
+library(sf)
+```
+
+There are two types of shape files for Brazil. One file represents municipalities data and another file represents data by State.
+
+```{r}
+# Load shapefiles
+br_mun <- read_sf('sf maps/shapefile','br_municipios')
+br_est <- read_sf('sf maps/shapefile','br_estados')
+```
+
+Here is a preview of the Municipalities data set.
+
+```{r}
+head(br_mun)
+plot(br_mun)
+```
+
+Here is a preview of the States data set.
+
+```{r}
+head(br_est)
+plot(br_est)
+```
+
+Since we are trying to plot the Population density, let's try to get Summary statistics to identify the characteristics of the variable.
+
+```{r}
+summary(br_mun$DensPop)
+```
+
+Here, according to the Summary statistics we can observe that there are extreme values present in the data set.
+
+For simplicity let's try to divide the population density across few different intervals. See the code below.
+
+```{r}
+# Setting population density classes
+br_mun$DensClass <- cut(br_mun$DensPop,breaks=c(0,5,50,500,5000,Inf),
+                        labels=c('< 5','5-50','50-500','500-5,000','> 5,000'))
+
+```
+
+```{r}
+table(br_mun$DensClass)
+```
+
+According to the newly formed categories we can see that how the density is distributed.
+
+Here we will try to construct the in several steps.
+
+1.  Let's plot the population density of each municipalities using 'geom_sf' function. Here, notice that there are more than 5500 municipalities in Brazil. Having a black colored boarder for each municipality will make the plot much crowded and will not me able to see the density colors. Therefore, municipality borders have been made 'transparent' so we would have a better plot.
+
+```{r}
+ggplot()+
+  geom_sf(data=br_mun, aes(fill=DensClass),color='transparent')
+```
+
+2.  In this step, States lines have been overlaid on top of the plot. Since we just need the states lines, the 'fill' of the states have made transparent and the lines are in White.
+
+```{r}
+ggplot()+
+  geom_sf(data=br_mun, aes(fill=DensClass),color='transparent')+
+  geom_sf(data =br_est, fill='transparent', color='white')
+```
+
+3.  In this step, we are trying to customize the color and the legend. Legend have been moved below the graph and labels, size, and the font positions have been customized.
+
+```{r}
+ggplot()+
+  geom_sf(data=br_mun, aes(fill=DensClass),color='transparent')+
+  geom_sf(data =br_est, fill='transparent', color='white')+
+  scale_fill_viridis_d(name='Inhab/'~km^2,
+                       guide=guide_legend(
+                         direction='horizontal',
+                         title.position='top',
+                         title.hjust = .5,
+                         label.hjust = .5,
+                         label.position = 'bottom',
+                         keywidth = 3,
+                         keyheight = .5
+                       ))
+```
+
+4.  Lastly, a title, a subtitle and a caption were given and the 'void theme' were applied for the graph.
+
+```{r}
+ggplot()+
+  geom_sf(data=br_mun, aes(fill=DensClass),color='transparent')+
+  geom_sf(data =br_est, fill='transparent', color='white')+
+  scale_fill_viridis_d(name='Inhab/'~km^2,
+                       guide=guide_legend(
+                         direction='horizontal',
+                         title.position='top',
+                         title.hjust = .5,
+                         label.hjust = .5,
+                         label.position = 'bottom',
+                         keywidth = 3,
+                         keyheight = .5
+                       ))+
+  labs(title="Brazil's demographics",
+                    subtitle='Population density',
+                    caption=c('Source: IBGE - Censo demografico, 2010'))+
+  theme_void()+
+  theme(title=element_text(face='bold'),
+        legend.position = 'bottom')
+
+```
+
+
+# Example 5: Creating maps using 'ggmaps' and Using Google Maps API
+
+Please see this following video on YouTube to on "How to create a developer account on Google" and how to manage your account.
+
+"creating the api - <https://www.youtube.com/watch?v=ewYGC2JjKuE&t=503s>"
+
+The main goal is the example is to be familiar with how to extract data from 'Google Maps API' and how to use the data to plot on the extracted map.
+
+In this example we will be trying to plot different crime data on a map of San Diego area.
+
+First load the following libraries.
+
+```{r}
+library(ggmap)
+library(tidyverse)
+```
+
+```{r include=FALSE}
+api ="ADD_YOR_API_KEY_HERE"
+```
+
+
+```{r,eval=FALSE}
+api = "You MUST get your 'own API' key from google, and don't share it with others.
+        SEE the video above on how to create a API with google"
+```
+
+Once you have your own personal API, you have to register your key with Google.
+
+```{r}
+## register with google
+register_google(key = api)
+```
+
+Here, we are extracting a map of neighborhood from San Diego area and we can adjust the 'zoom' to highlight the are that we need.
+
+```{r}
+## downloading the map
+ucsd.map <- get_map("9500 Gilman Drive, La Jolla",zoom=14)
+ggmap(ucsd.map) # constructing the map
+```
+
+Once we are set with the map, we can include the crime data. Please see the the following web lilnk to download the 'crime data' in San Diego area.
+
+For your convince I have included a data file named, 'crime_data_2021.csv', which you can find on Blackboard.
+
+```{r}
+##Download crime data in San Diego : https://data.sandiegodata.org/?s=crime
+##getting crime data to plot
+san.diego.crime <- read.csv('crime_data_2012.csv')
+```
+
+The crime data set consists of 27 variables. Since our goal is to plot different types of data, we will extract the 'data and time', 'type of crime', 'latitude', 'longitude' for each occurrence.
+
+```{r}
+san.diego.crime <- san.diego.crime[,c(1,10,22,23)]
+san.diego.crime$category = as.factor(san.diego.crime$category)
+```
+
+The idea is to match the 'latitude' and 'longitude' of each incident with the coordinates of the map.
+
+Following plot reflects that.
+
+```{r}
+#plotting the crime locations on the map
+ggmap(ucsd.map) + 
+  geom_point(data=san.diego.crime,
+             aes(x=lon,y=lat),
+             size=3,alpha=.7)
+```
+
+Here we can observe each incident with a black point on the map.
+
+Since we cannot identify each crime type, let's try to color points with each crime type. Remember that there are 14 different types of crime in the data set.
+
+```{r}
+## let's identify each crime
+  ggmap(ucsd.map) + 
+  geom_point(data=san.diego.crime,
+             aes(x=lon,y=lat,color=category),
+             size=4,alpha=.7)
+
+```
+
+Now, we will try to plot crime data on the entire city of San Diego. First let's adjust the zoom on the map to get a better view of the city.
+
+```{r}
+#### for the whole city of San Diego
+san.diego.map <- get_map("San Diego",zoom=11)
+ggmap(san.diego.map)
+```
+
+Since there are 14 different types of crime in the data set, it would be too crowded if all the points were ploted on the same map. remember there are 143,182 data points.
+
+For simplicity, we will try to extract 6 types of crimes and create a new data set. By using that data set we will try to produce 6 more different maps for each data type.
+
+```{r}
+# only considering 6 types of crime for the facet_wrap function for the simplicity.
+san.diego.crime.sub <- san.diego.crime %>%
+  filter(category %in% c('BURGLARY','ASSAULT','THEFT/LARCENY',
+                     'DRUGS/ALCOHOL VIOLATIONS','MOTOR VEHICLE THEFT','DUI')) 
+
+```
+
+Creating 6 different maps for each crime type. Here we are using 'facet_wrap' function to generate multiple maps.
+
+```{r}
+p = ggmap(san.diego.map) + 
+  geom_point(data=san.diego.crime.sub,
+             aes(x=lon,y=lat,color=category),
+             size=.15,alpha=.3) + 
+  facet_wrap(~category) + 
+  theme(legend.position="none")
+ 
+ p
+```
+
+
+
+
+Check this link: https://timogrossenbacher.ch/bivariate-maps-with-ggplot2-and-sf/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

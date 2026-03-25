@@ -1,0 +1,126 @@
+Coaster	State	Type	Design	Speed	Height	Length
+Afterburner	Indiana	Steel	Sit Down	45	56	635
+Alpengeist	Virginia	Steel	Inverted	67	195	3828
+American Eagle	Illinois	Wooden	Sit Down	66	127	4650
+Anaconda	Virginia	Steel	Sit Down	50	128	2700
+Apollos Chariot	Virginia	Steel	Sit Down	73	170	4882
+Arkansas Twister	Arkansas	Wooden	Sit Down	71	95	3340
+Batman And Robin; The Chiller	New Jersey	Steel	Sit Down	70	200	1137
+Batman And Robin; The Chiller	New Jersey	Steel	Sit Down	70	200	1229
+Batman Knight Flight	Ohio	Steel	Sit Down	65	157	4210
+Batman The Escape	Texas	Steel	Stand Up	55	90	2300
+Batman: The Ride	Louisiana	Steel	Inverted	50	105	2693
+Beast	Ohio	Wooden	Sit Down	65	110	7400
+Big Bad John	Arkansas	Steel	Sit Down	37	32	2349
+Blue Streak	Ohio	Wooden	Sit Down	40	78	2558
+Boss	Missouri	Wooden	Sit Down	66	122	5051
+Cannon Ball	Georgia	Wooden	Sit Down	50	70	2272
+Canyon Blaster	Nevada	Steel	Sit Down	41	94	2423
+Chang	Kentucky	Steel	Stand Up	63	154	4155
+Cheetah	Georgia	Wooden	Sit Down	52	92	2680
+Coaster Thrill Ride	Washington	Wooden	Sit Down	50	55	2650
+Colossus	California	Wooden	Sit Down	62	125	4325
+Comet	New York	Wooden	Sit Down	55	95	4197
+Comet	Pennsylvania	Wooden	Sit Down	50	84	3360
+Comet	Pennsylvania	Wooden	Sit Down	25	37	1300
+Corkscrew	Idaho	Steel	Sit Down	46	70	1250
+Cyclops	Wisconsin	Wooden	Sit Down	58	70	1900
+Déjà Vu	Illinois	Steel	Inverted	66	192	1204
+Déjà Vu	Georgia	Steel	Inverted	66	192	1204
+Demon	Illinois	Steel	Sit Down	50	102	2130
+Demon	California	Steel	Sit Down	50	102	2130
+Desperado	Nevada	Steel	Sit Down	80	209	5843
+Diamond Back	Oklahoma	Steel	Sit Down	45	56	635
+Dueling Dragons	Florida	Steel	Inverted	60	125	3200
+Dueling Dragons	Florida	Steel	Inverted	55	125	3200
+Excalibur	Minnesota	Steel	Sit Down	55	100	2415
+Excalibur	Maine	Wooden	Sit Down	55	100	2700
+Face/Off	Ohio	Steel	Inverted	50	161	1014
+Gemini	Ohio	Steel	Sit Down	60	125	3935
+Georgia Cyclone	Georgia	Wooden	Sit Down	50	95	2970
+Georgia Scorcher	Georgia	Steel	Stand Up	54	107	3000
+GhostRider	California	Wooden	Sit Down	56	118	4533
+Giant Dipper	California	Wooden	Sit Down	55	70	2640
+Goliath	California	Steel	Sit Down	85	235	4500
+Great American Scream Machine	New Jersey	Steel	Sit Down	68	173	3800
+Great American Scream Machine	Georgia	Wooden	Sit Down	57	105	3450
+Great Bear	Pennsylvania	Steel	Inverted	58	90	2800
+Great NorEaster	New Jersey	Steel	Inverted	55	115	2170
+Great White	New Jersey	Wooden	Sit Down	50	110	3300
+Great White	Texas	Steel	Inverted	50	108	2562
+Hurricane	South Carolina	Wooden	Sit Down	55	102	3800
+HyperSonic XLC	Virginia	Steel	Sit Down	80	165	1560
+Incredible Hulk	Florida	Steel	Sit Down	67	110	3700
+Invertigo	California	Steel	Inverted	50	161	1014
+Iron Wolf	Illinois	Steel	Stand Up	55	100	2900
+Jack Rabbit	Pennsylvania	Wooden	Sit Down	45	40	2132
+Jaguar!	California	Steel	Sit Down	35	65	2602
+Judge Roy Scream	Texas	Wooden	Sit Down	53	71	2670
+Kraken	Florida	Steel	Sit Down	65	149	4177
+Kumba	Florida	Steel	Sit Down	60	143	3978
+Loch Ness Monster	Virginia	Steel	Sit Down	60	130	3240
+Magnum XL-200	Ohio	Steel	Sit Down	72	205	5106
+Mamba	Missouri	Steel	Sit Down	75	205	5600
+Manhattan Express	Nevada	Steel	Sit Down	67	203	4777
+Mantis	Ohio	Steel	Stand Up	60	145	3900
+Mean Streak	Ohio	Wooden	Sit Down	65	161	5427
+Medusa	California	Steel	Sit Down	65	150	3937
+Medusa	New Jersey	Steel	Sit Down	61	142	3985
+Millennium Force	Ohio	Steel	Sit Down	93	310	6595
+Montu	Florida	Steel	Inverted	60	150	3983
+New Mexico Rattler	New Mexico	Wooden	Sit Down	47	80	2750
+Nitro	New Jersey	Steel	Sit Down	80	230	5394
+Phantoms Revenge	Pennsylvania	Steel	Sit Down	82	160	3200
+Phoenix	Pennsylvania	Wooden	Sit Down	45	78	3200
+Raging Bull	Illinois	Steel	Sit Down	73	202	5057
+Rampage	Alabama	Wooden	Sit Down	56	120	3500
+Raptor	Ohio	Steel	Inverted	57	137	3790
+Rattler	Texas	Wooden	Sit Down	65	180	5080
+Raven	Indiana	Wooden	Sit Down	48	80	2731
+Revolution	Tennessee	Steel	Sit Down	55	70	1565
+Riddlers Revenge	California	Steel	Stand Up	65	156	4370
+River King Mine Train	Missouri	Steel	Sit Down	37	32	2500
+Scream!	California	Steel	Sit Down	63	150	3985
+Screamer	California	Steel	Sit Down	50	90	2600
+Screamin Eagle	Missouri	Wooden	Sit Down	62	110	3872
+Sidewinder	Colorado	Steel	Sit Down	45	56	635
+Silver Bullet	Oklahoma	Steel	Sit Down	55	83	1942
+Son Of Beast	Ohio	Wooden	Sit Down	78	218	7032
+Starliner	Florida	Wooden	Sit Down	55	70	2640
+Steel Eel	Texas	Steel	Sit Down	65	150	3700
+Steel Force	Pennsylvania	Steel	Sit Down	75	200	5600
+Steel Venom	Minnesota	Steel	Inverted	68	185	630
+Superman - Ride Of Steel	Massachusetts	Steel	Sit Down	77	208	5400
+Superman - Ride Of Steel	New York	Steel	Sit Down	73	208	5400
+Superman - Ride Of Steel	Maryland	Steel	Sit Down	73	200	5350
+Superman - Ultimate Flight	Illinois	Steel	Flying	50	115	2798
+Superman - Ultimate Flight	New Jersey	Steel	Flying	60	115	2759
+Superman The Escape	California	Steel	Sit Down	100	415	1235
+Swamp Fox	South Carolina	Wooden	Sit Down	50	75	2400
+Talon	Pennsylvania	Steel	Inverted	58	135	3110
+Tennessee Tornado	Tennessee	Steel	Sit Down	63	163	2682
+Texas Giant	Texas	Wooden	Sit Down	65	143	4920
+Thunderbolt	Pennsylvania	Wooden	Sit Down	55	70	2887
+Thunderhawk	Pennsylvania	Wooden	Sit Down	45	80	2767
+Timber Wolf	Missouri	Wooden	Sit Down	53	100	4230
+Titan	Texas	Steel	Sit Down	85	245	5312
+Top Gun	California	Steel	Inverted	50	102	2260
+Top Thrill Dragster	Ohio	Steel	Sit Down	120	420	2800
+Tremors	Idaho	Wooden	Sit Down	60	100	3000
+Twister	Pennsylvania	Wooden	Sit Down	52	102	3900
+Two-Face: The Flip Side	Maryland	Steel	Inverted	50	161	1014
+Vapor Trail	Pennsylvania	Steel	Sit Down	27	43	1300
+Viper	California	Steel	Sit Down	70	188	3830
+Viper	Illinois	Wooden	Sit Down	50	100	3458
+Viper	New York	Steel	Sit Down	50	121	3100
+Volcano, The Blast Coaster	Virginia	Steel	Inverted	70	155	2757
+Vortex	Ohio	Steel	Sit Down	55	148	3800
+Whizzer	Illinois	Steel	Sit Down	42	70	3100
+Wild One	Maryland	Wooden	Sit Down	53	98	4000
+Wild Thing	Minnesota	Steel	Sit Down	74	207	5460
+Wildcat	Pennsylvania	Wooden	Sit Down	50	90	3183
+Wildcat	Connecticut	Wooden	Sit Down	48	85	2746
+Wildcat	Oklahoma	Wooden	Sit Down	60	75	2653
+Wildfire	Missouri	Steel	Sit Down	66	120	3073
+Zeus	Wisconsin	Wooden	Sit Down	60	90	2900
+Zippin Pippin	Tennessee	Wooden	Sit Down	40	70	2865

@@ -1,0 +1,69 @@
+---
+title: "Homewok 1"
+author: "Dr. Isuru Dassanayake"
+output:
+  word_document: default
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+Instructions: Include all **codes** and **R-outputs** that are **necessary** for each question.
+
+Submission: You **MUST** submit a PDF file only.
+
+#### Question 1:
+
+The data sets here consists of applications for admission to graduate study at the University of California, Berkeley for the Fall 1973. "Admission.csv" contains university level admission status and "Original_Admissions_Data.csv" contains admissions by each department.
+
+1.  Using GGplot create an appropriate graphic to show the university-level Admissions. (Hint: Female and male applications admitted and rejected (stacked bar plot (2 bars), admitted and rejected broken down by % male/female.) (Use Admissions.csv).
+
+2.  Assume admissions are conducted at the department level. Create an appropriate graphic to show the department level Admissions. (use Original_Admissions_Data.csv). (Hint: Let's look at %male/female for admitted and rejected applicants by department.)
+
+3.  Are admissions gender biased? What other factors could influence admission rates? Discuss.
+
+#### Question 2:
+
+The data set used, represents gene expression data for multiple samples. Use `gene expression.csv` for this question.
+
+1.  Create a scatter plot representing gene expression of "sampleB" on the X-axis and "sampleH" on the Y-axis. What kind of relationship do you observe?
+
+2.  Add a column to the data frame, according to the following conditions:
+
+    -   Name the new column as "expre_limit".
+
+    -   If the expression of a gene is \> 13 in both sampleB and sampleH, set to the value in "expre_limits" to "high".
+
+    -   If the expression of a gene is \< 6 in both sampleB and sampleH, set it to "low".
+
+    -   If different, set it to "normal".
+
+3.  Color the points of the scatter plot according to the newly created column "expre_limits". Save that plot in the object "plot1".
+
+4.  Rename the legend title as "Expression Limits".
+
+5.  Add another layer to "plot1" in order to change the points colors to blue (for low), grey (for normal) and red (for high). Save this plot in the object "plot2".
+
+6.  Produce a bar plot of how many low/normal/high genes are in the column 'expre_limits'. Save this plot as "plot3".
+
+7.  To plot3, add an horizontal line at "counts = 250".
+
+8.  Swap the X-axis and the Y-axis of the plot from part 7).
+
+#### Question 3:
+
+Titanic data set from `Kaggle.com` is used for this example. Please use `titanic.csv` for this question.
+
+Description of the data set as follows:
+
+![](tit.png){width="561"}
+
+1.  Is there a relationship between the age of the passenger and the passenger fare? Explore this by constructing a scatter plot.
+
+2.  Color the points from question 1 by Pclass. Remember that Pclass is a proxy for socioeconomic status.
+
+3.  Manually scale the colors in question 4. 1st class = red, 2nd class = purple, 3rd class = seagreen. Also change the legend labels (1 = 1st Class, 2 = 2nd Class, 3 = 3rd Class).
+
+4.  Create Juxtaposed plots for the scatter plot made in 3 by the column 'Sex'
+
+5.  Plot the number of passengers (a simple count) that survived by ticket class.
