@@ -148,17 +148,20 @@ df <- data.frame(
   year    = factor(rep(c("2019", "2020"), each = length(countries))),
   income  = c(man_2019, man_2020)
 )
+glimpse(df)
+glimpse(man_df)
 
 
 ## Plot a single bar graph
-plot_a = ggplot(df, aes(x = countries, y = income, fill = year)) +
+plot_a = ggplot(df, aes(x = country, y = income, fill = year)) +
   geom_col(position = "dodge") +
     labs(x = "Country", y = "Income", fill = "Year",
        title = "Income by Country: 2019 vs 2020") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-# plot_a
+
+plot_a
 ```
 
 
