@@ -1,0 +1,78 @@
+---
+title: "Homework 3"
+author: "Dr. Isuru Dassanayake"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+Instructions: Include all codes and R-outputs that are necessary for each question. Submission: You MUST submit a PDF file.
+
+#### Question 1: Regression Models:
+
+Is there a relationship between student math test scores and socioeconomic variables? The data set `CASchools.csv` contains data on test performance, school demographics, and student demographic background for school districts in California. Remove the variable `county` before the analysis.
+
+Please use the Data set description document to learn more about the data set.
+
+
+a). Fit a linear regression model to predict math test scores using the variables in the dataset. Discuss your results, making sure to cover the following points:
+
+1.  What do you observe about the relationship between these predictors and math test scores?
+
+2.  Are there any insignificant variables?
+
+3.  Which predictor is explaining math scores the best?
+
+4.  Explain the interpretation of the coefficient on lunch in terms of the response variable.
+
+b). Do you think you can fit a better model than the model in part (a)? Fit a new model that you think is a better fit for the data. What do you observe about this new model? (Use an appropriate variable selection algorithm and use cross-validation to validate your answers).
+
+c). Write the equation for the least square fit from part b).
+
+d). Compare the R2 and Testing MSE for models from part (a) and (b).
+
+e). Using a residuals plot for part a and part b models, state the appropriateness of using a linear model for this problem.
+
+f). Incorporate an interaction term into your multiple linear regression and respond to the following:
+
+1.  Provide analytical justification for your interaction term.
+
+2.  Compare your results with the models from parts a) and b).
+
+g). Fit a 'Ridge Regression' Model for the dataset and interpret the results.
+
+h). Fit a 'LASSO Regression' model for the dataset and interpret the results.
+
+i). Compare all Testing MSE values that you got from parts a,b,f,g and h. Which model do you recommend?
+
+
+
+
+#### Problem 2: Tree based models:
+
+This question should be answered using the ***"Wine Quality"*** data set. Description about the data set can be found on the link provided. Objective of this question is to fit an regression tree model to predict quality of wine.
+
+a).  Produce some numerical and graphical summaries of the data set. Explain the relationships.
+
+b).  Create a training set with 80% of the observations, and a testing set containing the remaining 20%.
+
+c).  Fit a regression tree with *quality* as the response variable using the training set. Plot the tree and interpret the results. What test MSE do you obtain?
+
+d).  Use cross-validation in order to determine the optimal level of tree complexity. Does pruning the tree improve the test MSE?
+
+e).  Use random forests to analyze this data. What test MSE do you obtain?
+
+f).  Use the *importance()* function to determine which variables are most important.
+
+
+
+
+
+
+
+
+
+
+
+

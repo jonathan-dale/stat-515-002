@@ -1,0 +1,267 @@
+---
+title: "Ridge and Lasso Models"
+author: "Dr. Isuru Dassanayake"
+date: "`r Sys.Date()`"
+output: rmdformats::robobook
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE)
+```
+
+## Shrinkage Methods
+
+The subset selection methods described in the previous section involve using least squares to ﬁt a linear model that contains a subset of the predictors. As an alternative, we can ﬁt a model containing all and p predictors using a technique that constrains or regularizes the coeﬃcient estimates, or equivalently, that shrinks the coeﬃcient estimates towards zero. It may not be immediately obvious why such a constraint should improve the ﬁt, but it turns out that shrinking the coeﬃcient estimates can signiﬁcantly reduce their variance. The two best-known techniques for shrinking the regression coeﬃcients towards zero are ridge regression and the lasso.
+
+# Ridge Regression
+
+Recall from linear models that the least squares fitting procedure estimates $\beta_0, \beta_1, \ldots, \beta_p$ using the values that minimize, $$
+R S S=\sum_{i=1}^n\left(y_i-\beta_0-\sum_{j=1}^p \beta_j x_{i j}\right)^2
+$$
+
+Ridge regression is very similar to least squares, except that the coefficients are estimated by minimizing a slightly different quantity. In particular, the ridge regression coefficient estimates $\hat{\beta}_\lambda^R$ are the values that minimize
+
+$$
+\sum_{i=1}^n\left(y_i-\beta_0-\sum_{j=1}^p \beta_j x_{i j}\right)^2+\lambda \sum_{j=1}^p \beta_j^2=R S S+\lambda \sum_{j=1}^p \beta_j^2
+$$ where $\lambda \geq 0$ is a **tuning parameter**, to be determined separately.
+
+As with least squares, ridge regression seeks coefficient estimates that fit the data well, by making the RSS small. However, the second term, $\lambda \sum_{j=1}^p \beta_j^2$, called a shrinkage penalty, is small when $\beta_1, \ldots, \beta_p$ are close to zero, and so it has the effect of shrinking the estimates of $\beta_j$ towards zero. The tuning parameter $\lambda$ serves to control the relative impact of these two terms on the regression coefficient estimates. When $\lambda=0$, the penalty term has no effect, and ridge regression will produce the least squares estimates. However, as $\lambda \rightarrow \infty$, the impact of the shrinkage penalty grows, and the ridge regression coefficient estimates will approach zero. Unlike least squares, which generates only one set of coefficient estimates, ridge regression will produce a different set of coefficient estimates, $\hat{\beta}_\lambda^R$, for each value of $\lambda$. Selecting a good value for $\lambda$ is critical; we will talk about this later. Note that the shrinkage penalty is applied to $\beta_1, \ldots, \beta_p$ but not to the intercept $\beta_0$. We want to shrink the estimated association of each variable with the response; however, we do not want to shrink the intercept, which is simply a measure of the mean value of the response when $x_{i 1}=x_{i 2}=\cdots=x_{i p}=0$. If we assume that the variables - that is, the columns of the data matrix $X$ - have been centered to have mean zero before ridge regression is performed, then the estimated intercept will take the form $$
+\hat{\beta}_0=\frac{1}{n} \sum_{i=1}^n y_i=\bar{y}
+$$ While the ridge coefficient estimates tend to decrease in aggregate as $\lambda$ increases, individual coefficients may occasionally increase as $\lambda$ increases. Let us define the $\boldsymbol{\ell}_2$-norm of a vector $u=\left(u_1, u_2, \ldots, u_k\right)$, denoted as $\|u\|_2$, as $$
+\|u\|_2=\sqrt{\sum_{j=1}^k u_k^2}
+$$ It measures the distance of $u$ from zero. However, as $\lambda$ increases, $\ell_2$-norm of $\hat{\beta}_\lambda^R,\left\|\hat{\beta}_\lambda^R\right\|_2$ will always decrease, and so will $\frac{\left\|\hat{\beta}_\lambda^R\right\|_2}{\|\widehat{\beta}\|_2}$. The latter quantity ranges from 1 (when $\lambda=0$, in which case the ridge regression coefficient estimate is the same as the least squares estimate, and so their $\ell_2$ norms are the same) to 0 (when $\lambda \rightarrow \infty$, in which case the ridge regression coefficient estimate is a vector of zeros, with $\ell$, norm equal to zero).
+
+The standard least squares coefficient estimates are scale invariant: multiplying $X_j$ by a constant $c$ simply leads to a scaling of the least squares coefficient estimates by a factor of $\frac{1}{c}$. In other words, regardless of how the $j$ th predictor is scaled, $X_j \hat{\beta}_j$ will remain the same. In contrast, the ridge regression coefficient estimates can change substantially when multiplying a given predictor by a constant. In other words, $X_j \hat{\beta}_\lambda^R$ will depend not only on the value of $\lambda$, but also on the scaling of the $j$ th predictor. In fact, the value of $X_j \hat{\beta}_\lambda^R$ may even depend on the scaling of the other predictors! Therefore, it is best to apply ridge regression after standardizing the predictors, using the formula $$
+\bar{x}_{i j}=\frac{x_{i j}}{\sqrt{\frac{1}{n} \sum_{i=1}^n\left(x_{i j}-\bar{x}_j\right)^2}}$$
+
+so that they are all on the same scale. Here, the denominator is the estimated standard deviation of the $j^{th}$ predictor. Consequently, all of the standardized predictors will have a standard deviation of one. As a result the final fit will not depend on the scale on which the predictors are measured.
+
+#### Example: Hitters data set Cts...
+
+```{r}
+library(ISLR)
+names(Hitters)
+
+# First of all, we note that the Salary variable is missing for 
+#some of the players
+
+sum(is.na(Hitters$Salary))
+Hitters=na.omit(Hitters) # removing rows with missing values
+```
+
+We use the `glmnet` package in order to perform ridge regression and the lasso. Here we do not use the $y ~ x$ syntax.
+
+Let's perform ridge regression and the lasso in order to predict `Salary` on the Hitters data.
+
+It has an alpha argument that determines what type of model is fit.
+
+If $alpha=0$ then a ridge regression model is fit, and if $alpha=1$ then a lasso model is fit.
+
+The set-up
+```{r}
+library(glmnet)
+
+x=model.matrix(Salary~., Hitters)[,-1] # -1 is to remove the intercept
+y=Hitters$Salary
+```
+
+First let's look at how the `glmnet` package behaves. 
+
+```{r}
+grid=10^seq(10,-2,length=100)
+
+ridge.mod=glmnet(x,y,alpha=0,lambda=grid)
+plot(ridge.mod)
+```
+
+By default `glmnet()` standardizes the variables so that they are on the same scale.
+
+To turn off this default setting, use the argument `standardize=FALSE`.
+
+Associated with each value of $\lambda$ is a vector of ridge regression coefficients,
+stored in a matrix that can be accessed by `coef()`
+```{r}
+ # 20x100 (100 lambda value and 19 predictors plus the intercept)
+dim(coef(ridge.mod))
+```
+
+We expect the coefficient estimates to be much smaller, in terms of L2 norm,
+when a large value of $\lambda$ is used, as compared to when a small value is used.
+```{r}
+# obtain the ridge regression coefficients for a new lambda, say 50th value:
+ridge.mod$lambda[50]
+coef(ridge.mod)[,50]
+
+# 60th lambda value
+ridge.mod$lambda[60]
+coef(ridge.mod)[,60]
+
+
+# obtain the ridge regression coefficients for a new lambda, say 50:
+# when lambda = 50
+predict(ridge.mod,s=50,type="coefficients")[1:20,]
+```
+
+Let's use Validation-set approach to select lambda
+
+```{r}
+set.seed(1)
+train=sample(1:nrow(x), nrow(x)/2)# another approach to sample
+test=(-train)
+
+# creating Y values for the testing set
+y.test=y[test]
+```
+
+```{r}
+# fit a ridge regression model on the training set,
+# and evaluate its MSE on the test set, using lambda = 4.
+
+ridge.mod=glmnet(x[train,],y[train],alpha=0,lambda=grid)
+ridge.pred=predict(ridge.mod,s=4,newx=x[test,])
+mean((ridge.pred-y.test)^2) #MSE
+```
+
+Least squares is simply ridge regression with $\lambda=0$
+```{r}
+
+ridge.pred=predict(ridge.mod,s=0,newx=x[test,])
+mean((ridge.pred-y.test)^2)
+```
+
+`cv.glmnet()` uses cross-validation to choose the tuning parameter. By default, the function performs ten-fold cross-validation, though this can be changed using the argument n-folds.
+
+```{r}
+set.seed (1)
+cv.out=cv.glmnet(x[train ,],y[train],alpha=0)
+plot(cv.out)
+
+bestlam=cv.out$lambda.min
+bestlam; # the best lambda
+
+#Getting the MSE for the Test set
+ridge.pred=predict(ridge.mod,s=bestlam ,newx=x[test,])
+mean((ridge.pred-y.test)^2)
+```
+
+This represents a further improvement over the test MSE when $\lambda=4$.
+Finally refit our ridge regression model on the full data set with the best $\lambda$
+
+```{r}
+out=glmnet(x,y,alpha=0)
+predict(out,type="coefficients",s=bestlam)[1:20,]
+```
+As expected, none of the coefficients are zero. Ridge regression does not perform variable selection!
+
+### Why Does Ridge Regression Improve Over Least Squares?
+
+Ridge regression's advantage over least squares is rooted in the bias-variance trade-off. As $\lambda$ increases, the ﬂexibility of the ridge regression ﬁt decreases, leading to decreased variance but increased bias.\
+Ridge regression also has substantial computational advantages over best subset selection, which requires searching through $2^p$ models. As we discussed previously, even for moderate values of p, such a search can be computationally infeasible. In contrast, for any ﬁxed value of $\lambda$ , ridge regression only ﬁts a single model, and the model-ﬁtting procedure can be performed quite quickly. In fact, one can show that the computations required to solve the ridge regression equation, simultaneously for all values of λ, are almost identical to those for ﬁtting a model using least squares.
+
+# The Lasso
+
+Ridge regression does have one obvious disadvantage. Unlike best subset, forward stepwise, and backward stepwise selection, which will generally select models that involve just a subset of the variables, ridge regression will include all $p$ predictors in the final model. The penalty $\lambda \sum_{j=1}^p \beta_j^2$ will shrink all of the coefficients towards zero, but it will not set any of them exactly to zero (unless $\lambda \rightarrow \infty$ ). This may not be a problem for prediction accuracy, but it can create a challenge in model interpretation in settings in which the number of variables $p$ is quite large. For example, we might want to keep only the most important variables and build a model including just these predictors. However, ridge regression will always generate a model involving all predictors. Increasing the value of $\lambda$ will tend to reduce the magnitudes of the coefficients, but will not result in exclusion of any of the variables. The lasso is a relatively recent alternative to ridge regression that overcomes this disadvantage. The lasso coefficients, $\hat{\beta}_\lambda^L$, minimize the quantity
+
+$$
+\sum_{i=1}^n\left(y_i-\beta_0-\sum_{j=1}^p \beta_j x_{i j}\right)^2+\lambda \sum_{j=1}^p\left|\beta_j\right|=R S S+\lambda \sum_{j=1}^p\left|\beta_j\right|
+$$ We see that the lasso and ridge regression have similar formulations. The only difference is that the $\beta_j^2$ term in the ridge regression penalty has been replaced by $\left|\beta_j\right|$ in the lasso penalty. Recall that, the $\ell_{1^{-}}$ norm of a vector $u=\left(u_1 u_2 \ldots u_k\right)$ is given as $$
+\|u\|_1=\sum_{j=1}^k\left|u_k\right|
+$$ Thus, mathematically speaking, the lasso uses an $\ell_1$-norm instead of an $\ell_2$-norm.
+
+As with ridge regression, the lasso shrinks the coefficient estimates towards zero. However, in the case of the lasso, the $\ell_1$-norm penalty has the effect of forcing some of the coefficient estimates to be exactly equal to zero when the tuning parameter $\lambda$ is sufficiently large. Hence, much like best subset selection, the lasso performs variable selection. As a result, models generated from the lasso are generally much easier to interpret than those produced by ridge regression. We say that the lasso yields sparse models - that is, sparse models that involve only a subset of the variables. As in ridge regression, selecting a good value of $\lambda$ for the lasso is critical; we will say more about this later.
+
+### Comparing the Lasso and Ridge Regression
+
+It is clear that the lasso has a major advantage over ridge regression, in that it produces simpler and more interpretable models that involve only a subset of the predictors. However, which method leads to better prediction accuracy? The lasso leads to qualitatively similar behavior to ridge regression, in that as λ increases, the variance decreases and the bias increases.
+
+Neither ridge regression nor the lasso will universally dominate the other. In general, one might expect the lasso to perform better in a setting where a relatively small number of predictors have substantial coeﬃcients, and the remaining predictors have coeﬃcients that are very small or that equal zero. Ridge regression will perform better when the response is a function of many predictors, all with coeﬃcients of roughly equal size. However, the number of predictors that is related to the response is never known a priori for real data sets. 
+
+A technique such as cross-validation can be used in order to determine which approach is better on a particular data set. As with ridge regression, when the least squares estimates have excessively high variance, the lasso solution can yield a reduction in variance at the expense of a small increase in bias, and consequently can generate more accurate predictions. Unlike ridge regression, the lasso performs variable selection, and hence results in models that are easier to interpret. There are very eﬃcient algorithms for ﬁtting both ridge and lasso models; in both cases the entire coeﬃcient paths can be computed with about the same amount of work as a single least squares ﬁt.
+
+### Selecting the Tuning Parameter
+
+Just as the subset selection approaches require a method to determine which of the models under consideration is best, implementing ridge regression and the lasso requires a method for selecting a value for the tuning parameter $\lambda$, or equivalently, the value of the constraint s. Cross-validation provides a simple way to tackle this problem. We choose a grid of $\lambda$ values, and compute the cross-validation error for each value of $\lambda$.\
+
+We then select the tuning parameter value for which the cross-validation error is smallest. Finally, the model is re-ﬁt using all of the available observations and the selected value of the tuning parameter.
+
+#### Example: Hitters data set Cts...
+
+To perform lasso, use the argument `alpha=1`.
+
+```{r}
+lasso.mod=glmnet(x[train,], y[train], alpha=1, lambda=grid)
+plot(lasso.mod)
+```
+
+```{r}
+# perform cross-validation to get best lambda
+set.seed (1)
+cv.out=cv.glmnet(x[train,],y[train],alpha=1)
+plot(cv.out)
+
+### getting the optimal lambda
+bestlam=cv.out$lambda.min
+bestlam
+```
+
+```{r}
+## calculating MSE
+lasso.pred=predict(lasso.mod,s=bestlam ,newx=x[test,])
+mean((lasso.pred-y.test)^2) # slightly larger than ridge
+```
+
+However, the lasso has a substantial advantage: 8 of the 19 coefficient estimates are exactly zero.
+
+```{r}
+out=glmnet(x,y,alpha=1,lambda=grid)
+lasso.coef=predict(out,type="coefficients",s=bestlam)[1:20,]
+lasso.coef
+```
+
+```{r}
+lasso.coef[lasso.coef!=0]
+```
+
+compare with OLS when only selected predictors are included.
+```{r}
+fit.lm=lm(Salary~AtBat+Hits+Walks+Years+CHmRun+CRuns+CRBI+League+
+            Division+PutOuts+Errors, data=Hitters)
+
+coef(fit.lm)
+```
+
+
+## Summary for Ridge and Lasso Regression
+
+### Ridge Regression:
+
+-   It is most suitable when a data set contains a higher number of predictor variables than the number of observations.
+
+-   The second-best scenario is when multicollinearity is experienced in a data set.
+
+-   Ridge regression aims at reducing the standard error by adding some bias in the estimates of the regression.
+
+    -   The reduction of the standard error in regression estimates significantly increases the reliability of the estimates.
+
+-    Variables standardization is the initial procedure in ridge regression. Both the independent and dependent variables require standardization through subtraction of their averages and a division of the result with the standard deviations.
+
+-    A ridge estimator is a shrinkage tool used in ridge regression. A shrinkage estimator is a parameter that produces new estimators that have been shrunk to give a value closer to the real population parameters.
+
+-   The detection of multicollinearity is key to the reduction of standard errors in models for predictability efficiency.
+
+### Ridge Regression vs. Least Squares:
+
+Ridge regression is a better predictor than least squares regression when the predictor variables are more than the observations. The least squares method cannot tell the difference between more useful and less useful predictor variables and includes all the predictors while developing a model. This reduces the accuracy of the model, resulting in over-fitting and redundancy.
+
+All of the above challenges are addressed by ridge regression. Ridge regression works with the advantage of not requiring unbiased estimators - rather, it adds bias to estimators to reduce the standard error. It adds bias enough to make the estimates a reliable representation of the population of data.
+
+### Lasso Regression:
+
+-   LASSO, short for Least Absolute Shrinkage and Selection Operator, is a statistical formula whose main purpose is the feature selection and regularization of data models.
+
+-   The LASSO method regularizes model parameters by shrinking the regression coefficients, reducing some of them to zero.
+
+-   LASSO offers models with high prediction accuracy. The accuracy increases since the method includes shrinkage of coefficients, which reduces variance and minimizes bias.

@@ -1,0 +1,771 @@
+---
+title: "Logistic Regression"
+author: "Dr. Isuru Dassanayake"
+date: "`r Sys.Date()`"
+output: rmdformats::robobook
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE)
+```
+
+# Machine Learning
+
+![](p1.png)
+
+# Classification
+
+The linear regression model discussed in previous lesson assumes that the response variable Y is quantitative. But in many situations, the response variable is instead qualitative. For example, eye color is qualitative, taking on values blue, brown, or green.
+
+Often qualitative variables are referred to as categorical; we will use these terms interchangeably. In this lesson, we study approaches for predicting qualitative responses, a process that is known as classification. Predicting a qualitative response for an observation can be referred to as classifying that observation, since it involves assigning the observation to a category, or class. On the other hand, often the methods used for classification first predict the probability of each of the categories of a qualitative variable, as the basis for making the classification. In this sense they also behave like regression methods.
+
+Examples of Classification: Classification problems occur often, perhaps even more so than regression problems.
+
+1.  A person arrives at the emergency room with a set of symptoms that could possibly be attributed to one of three medical conditions. Which of the three conditions does the individual have?
+
+2.  An online banking service must be able to determine whether or not a transaction being performed on the site is fraudulent, on the basis of the user's IP address, past transaction history, and so forth.
+
+3.  On the basis of DNA sequence data for a number of patients with and without a given disease, a biologist would like to figure out which DNA mutations are deleterious (disease-causing) and which are not.
+
+![](p2.png)
+
+Consider the following example:
+
+#### Brand Preference for Orange Juice: Citrus Hill Vs Minute Maid
+
+![](p3.png){width="188"}
+
+-   We would like to predict what customers prefer to buy: [Citrus Hill]{.underline} or [Minute Maid]{.underline} orange juice?
+-   The **Y(Purchase)** variable is [categorical]{.underline}: 0 or 1
+-   The **X (LoyalCH)** variable is a numerical value (between 0 and 1) which specifies how much the customers are loyal to the Citrus Hill (CH) orange juice.
+-   Can we use [Linear Regression]{.underline} when Y is categorical?
+
+### Why not Linear Regression?
+
+When Y is only takes on values of 0 and 1, why standard linear regression is inappropriate?
+
+![](p4.png){width="556"}
+
+-   The regression line $\beta_0 +\beta_1 X$ can only take on any values between negative and positive infinity.
+-   In the orange juice classification problem, Y can only take on two possible values:0 or 1.
+
+### Solution:
+
+Instead of trying to predict Y, let's try to predict the probability that a customer buys the Citrus Hill (CH) juice, i.e., let's try to predict $P(Y=1)$.
+
+If we try to calculate the above probability, the function $P(Y=1)$ give the outputs between 0 and 1. Which we can interpret.
+
+*For example: it is more valuable to have an estimate of the probability that an insurance claim is fraudulent, than a classification fraudulent or not.*
+
+#### Example: Self-reported heights in inches for males and females.
+
+Let's provide a prediction for a student that is 66 inches tall.
+
+What is the conditional probability of being [female if you are 66 inches tall?]{.underline}
+
+In our dataset, we can estimate this by rounding to the nearest inch and computing:
+
+![](p5.png){width="436"}
+
+To construct a prediction algorithm, we want to estimate the proportion of the population that is female for any given height $𝑋=𝑥$, which we write as the conditional probability described above
+
+$$P⁡(𝑌=1|𝑋=𝑥)$$
+
+![](p6.png){width="471"}
+
+Since the results from the plot above look close to linear, and it is the only approach we currently know, we will try regression.
+
+We assume that: $$P(x)=P⁡(𝑌=1|𝑋=)=\beta_0 +\beta_1 X  $$
+
+![](p7.png){width="471"} Then our estimate of the conditional probability $p(x)$ is $\hat p(x)=\hat\beta_0 +\hat\beta_1X$
+
+Then the Decision rule: predict female if $\hat p(x)>0.5$
+
+#### Another problem:
+
+![](p8.png){width="264"}
+
+Here we are estimating a probability:$Pr(Y=1|X=x)$ which is constrained between 0 and 1.
+
+The idea of generalized linear models (GLM) is to 1) define a distribution of $Y$ that is consistent with it's possible outcomes and 2) find a function $g$ so that $g(\operatorname{Pr}(Y=1 \mid X=x))$ can be modeled as a linear combination of predictors. Logistic regression is the most commonly used GLM. It is an extension of linear regression that assures that the estimate of $\operatorname{Pr}(Y=1 \mid X=x)$ is between 0 and 1 . This approach makes use of the logistic transformation defined as:
+
+$$g(p)=\log \frac{p}{1-p} $$ This logistic transformation converts probability to log odds.
+
+The **odds** : tell us how much more likely it is something will happen compared to not happening. $p=0.5$ means the odds are 1 to 1, thus the odds are 1. If $p=0.75$, the odds are 3 to 1.
+
+A nice characteristic of this transformation is that it converts probabilities to be symmetric around 0.
+
+![](p9.png){width="471"}
+
+# Logistic Regression
+
+With logistic regression, we model the conditional probability directly with:
+
+$$g\{\operatorname{Pr}(Y=1 \mid X=x)\}=\beta_0+\beta_1 x$$ With this model, we can no longer use least squares. Instead we compute the maximum likelihood estimate (MLE).
+
+$$
+\ell\left(\beta_0, \beta\right)=\prod_{i: y_i=1} p\left(x_i\right) \prod_{i: y_i=0}\left(1-p\left(x_i\right)\right)
+$$ This likelihood gives the probability of the observed zeros and ones in the data. We pick $\beta_0$ and $\beta_1$ to maximize the likelihood of the observed data.
+
+$$p(x)=P(Y=1|X=x)=\frac{e^{\beta_0+\beta_1 X}}{1+e^{\beta_0+\beta_1 X}}$$ or you can re-write the above formula as follows:
+
+$$\log \left(\frac{p(X)}{1-p(X)}\right)=\beta_0+\beta_1 X$$
+
+This monotone transformation is called the 'log odds' or 'logit' transformation of $p(x)$.
+
+Here for the above example both linear and logistic regressions provide an estimate for the conditional expectation: $$
+E(Y \mid X=x)
+$$ which in the case of binary data is equivalent to the conditional probability: $$
+\operatorname{Pr}(Y=1 \mid X=x)
+$$ ![](p10.png){width="471"}
+
+### Example :Credit Card Default Data:
+
+A simulated data set containing information on ten thousand customers. The aim here is to predict which customers will default on their credit card debt.
+
+We are interested in predicting whether an individual will default on his or her credit card payment, on the basis of annual income and monthly credit card balance.
+
+With this example we will try to understand what happens to the target variable based on the predictor variables.
+
+```{r}
+library(ISLR)
+library(tidyverse)
+library("reshape2")
+```
+
+```{r}
+data("Default")
+str(Default)
+attach(Default)
+```
+
+```{r}
+summary(Default)
+```
+
+Let's try to explore the relationship between the default status and other variables data visualize using ggplot, therefore need to rearrange the dataset.
+
+```{r}
+df.m <- melt(Default[,c(1,3,4)], id.var = "default")
+
+
+ggplot(data = df.m, aes(x=default, y=value)) + 
+  geom_boxplot(aes(fill=default)) + facet_wrap(~variable)
+```
+
+Let's free the scales:
+
+```{r}
+ggplot(data = df.m, aes(x=default, y=value)) + 
+  geom_boxplot(aes(fill=default)) + facet_wrap(~variable,scales="free")
+```
+
+```{r}
+ggplot(data=Default,aes(x=student))+geom_bar(aes(fill=default))
+```
+
+The data is unbalanced, the probability of defaulting is low. `Balance` and `student` status seem to have a significant effect on `default` status.
+
+For this data set, if we try to fit a linear regression model,model could lead to a nonsensical result for some values of balance because we know that probabilities are limited to values in the closed interval [0 1].
+
+```{r}
+Default %>%
+  mutate(prob = ifelse(default == "Yes", 1, 0)) %>%
+  ggplot(aes(balance, prob)) +
+  geom_point(alpha = .15) +
+  geom_smooth(method = "lm") +
+  ggtitle("Linear regression model fit") +
+  xlab("Balance") +
+  ylab("Probability of Default")
+```
+
+Now let's try to fit a logistic regression model for this data set only with the balnce variable.
+
+Since we have two classes for the target variable we set `family = "binomial'`.
+
+```{r}
+glm.balance=glm(default~balance,data=Default,family="binomial") 
+```
+
+If we try to visualize the model:
+
+```{r}
+Default %>%   
+  mutate(prob = ifelse(default == "Yes", 1, 0)) %>%
+  ggplot(aes(balance, prob)) +
+  geom_point(alpha = .15) +
+  geom_smooth(method = "glm", method.args = list(family = "binomial")) +
+  ggtitle("Logistic regression model fit") +
+  xlab("Balance") +
+  ylab("Probability of Default")
+```
+
+```{r}
+summary(glm.balance)
+```
+
+The summary can be interpreted similarly to linear regression. The Estimates are estimated values for $\beta_0$ and $\beta_1$ Standard error measures the variation of our estimator for different samples, The last column is the p-value, a low value for this column means the corresponding predictor has a significant effect.
+
+Deviance is analogous to the sum of squares calculations in linear regression and is a measure of the lack of fit to the data in a logistic regression model. The null deviance represents the difference between a model with only the intercept (which means "no predictors") and a saturated model (a model with a theoretically perfect fit).
+
+The goal is for the model deviance (noted as Residual deviance) to be lower; smaller values indicate better fit. In this respect, the null model provides a baseline upon which to compare predictor models.
+
+Keep in mind that the coefficient estimates from logistic regression characterize the relationship between the predictor and response variable on a log-odds scale.
+
+```{r}
+exp(coef(glm.balance))
+```
+
+Thus, we see that estimate of $\beta_1 = 1.0055$ and this indicates that an increase in balance is associated with an increase in in the log odds of default by 1.0055 units.
+
+We can further interpret the balance coefficient as - for every one dollar increase in monthly balance carried, the odds of the customer defaulting increases by a multiplicative factor of 1.0055.
+
+95% confidence intervals for the coefficients:
+
+```{r}
+confint(glm.balance)
+```
+
+Let's try to see how the `balance` affect the default status.
+
+Making Predictions:
+
+![](p11.png){width="469"}
+
+```{r}
+predict(glm.balance, data.frame(balance = c(1000, 2000)), type = "response")
+```
+
+Here we compare the probability of defaulting based on balances of \$1000 and \$2000. As you can see as the balance moves from \$1000 to \$2000 the probability of defaulting increases significantly, from 0.5% to 58%!
+
+One can also use qualitative predictors with the logistic regression model. As an example, we can fit a model that uses the student variable. Now using `students` as the predictor variable.
+
+```{r}
+glm.student=glm(default~student,data=Default,family="binomial")
+summary(glm.student)
+```
+
+Let's try to see how the `student` status affect the default status
+
+```{r}
+predict(glm.student, data.frame(student = factor(c("Yes", "No"))), 
+        type = "response")
+```
+
+In fact, this model suggests that a student has nearly twice the odds of defaulting than non-students.
+
+Now let us fit a model that predicts the probability of default based on the `balance`, `income` (in thousands of dollars), and `student` status variables.
+
+```{r}
+glm.fits=glm(default~.,data=Default,family="binomial")
+summary(glm.fits)
+```
+
+There is a surprising result here. The p-values associated with `balance` and `student=Yes` status are very small, indicating that each of these variables is associated with the probability of defaulting. However, the coefficient for the student variable is negative, indicating that students are less likely to default than non-students.
+
+In contrast, the coefficient for the `student` variable in the previous model, where we predicted the probability of default based only on student status, indicated that students have a greater probability of defaulting!
+
+```{r}
+ggplot(Default,aes(y=balance,x=student,fill=student))+
+  geom_boxplot()+
+  xlab("Student status")+
+  ylab("Balance")
+```
+
+This is because of the fact that the variables student and balance are correlated. Students tend to hold higher levels of debt, which is in turn associated with higher probability of default.
+
+In other words, students are more likely to have large credit card balances, which, as we know from the first model, tend to be associated with high default rates. Thus, even though an individual student with a given credit card balance will tend to have a lower probability of default than a non-student with the same credit card balance, the fact that students on the whole tend to have higher credit card balances means that overall, students tend to default at a higher rate than non-students.
+
+```{r}
+Default %>%
+  mutate(prob = ifelse(default == "Yes", 1, 0)) %>%
+  ggplot(aes(x=balance,y=prob,grp=student,col=student)) +
+  geom_point(alpha = .15) +
+  geom_smooth(method = "glm", method.args = list(family = "binomial")) +
+  ggtitle("Logistic regression model fit for different student status") +
+  xlab("Balance") +
+  ylab("Probability of Default")
+
+```
+
+`predict` function calculates predicted probabilities for given values of predictors.
+
+```{r}
+glm.probs=predict(glm.fits,type="response")
+glm.probs[1:10]
+```
+
+A reasonable prediction rule may be to assign Yes if the predicted probability of yes is \> 0.5.
+
+```{r}
+glm.pred=rep("No",nrow(Default))
+glm.pred[glm.probs>.5]="Yes"
+```
+
+Now we can compare the predicted target variable versus the observed values.
+
+We do it by using the confusion matrix, which is a table that describes the classification performance.
+
+```{r}
+library(caret)
+# needs to be factors with same levels
+confusionMatrix(as.factor(glm.pred),default) 
+```
+
+But training misclassification rate does not give the right estimation for prediction accuracy.
+
+To compare different models we need to compare test errors. Usual practice 80% for training and 20% FOR TESTING.
+
+Now let's divide our data set in to training and testing and re calculate the Testing error rates.
+
+```{r}
+train=sample(c(TRUE,FALSE),size=nrow(Default),prob=c(0.6,0.4),replace=TRUE)
+Default.test=Default[!train,]
+dim(Default.test)
+default.test=default[!train]
+```
+
+Here we are fitting all three models that we used earlier to see which is the better model.
+
+```{r}
+model1=glm(default~balance,data=Default,family=binomial,subset=train)
+model2=glm(default~student,data=Default,family=binomial,subset=train)
+model3=glm(default~.,data=Default,family=binomial,subset=train)
+```
+
+Calculating the prediction for testing set.
+
+```{r}
+test.predicted.m1 <- predict(model1, Default.test, type = "response")
+test.predicted.m2 <- predict(model2, Default.test, type = "response")
+test.predicted.m3 <- predict(model3, Default.test, type = "response")
+```
+
+Re-coding Yes and No
+
+```{r}
+glm.pred1=rep("No",nrow(Default.test))
+glm.pred2=rep("No",nrow(Default.test))
+glm.pred3=rep("No",nrow(Default.test))
+
+
+glm.pred1[test.predicted.m1>.5]="Yes"
+glm.pred2[test.predicted.m2>.5]="Yes"
+glm.pred3[test.predicted.m3>.5]="Yes"
+```
+
+```{r}
+list(
+  table1 = round(table(default.test, glm.pred1)/nrow(Default.test),3),
+  table2 = round(table(default.test, glm.pred2)/nrow(Default.test),3),
+  table3 = round(table(default.test, glm.pred3)/nrow(Default.test),3) 
+)
+```
+
+The results show that model1 and model3 are very similar. 96% of the predicted observations are true negatives and about 1% are true positives.
+
+Both models have a type II error of less than 2.5% in which the model predicts the customer will not default but they actually did and both models have a type I error of less than 0.5% in which the models predicts the customer will default but they never did.
+
+model2 results are notably different; this model accurately predicts the non-defaulters (a result of 97% of the data being non-defaulters) but never actually predicts those customers that default!
+
+```{r}
+m1.error = mean(default.test != glm.pred1)
+m2.error = mean(default.test != glm.pred2)
+m3.error = mean(default.test != glm.pred3)
+
+c(m1.error,m2.error,m3.error)
+```
+
+Looking at the misclassification rates, there is not much improvement between models 1 and 3 and although model 2 has a low error rate, it never accurately predicts customers that actually default.
+
+Use the following link to read about **Multinomial Logistic Regression**: [link](https://stats.idre.ucla.edu/r/dae/multinomial-logistic-regression/)
+
+## Advantages and Disadvantages of Logistic Regression
+
+#### Advantages
+
+-   Logistic regression is easier to implement, interpret, and very efficient to train.
+
+-   It makes no assumptions about distributions of classes in feature space.
+
+-   It can easily extend to multiple classes (multinomial regression) and a natural probabilistic view of class predictions.
+
+-   It not only provides a measure of how appropriate a predictor (coefficient size)is, but also its direction of association (positive or negative).
+
+-   It is very fast at classifying unknown records.
+
+-   Good accuracy for many simple data sets and it performs well when the dataset is linearly separable.
+
+-   It can interpret model coefficients as indicators of feature importance.
+
+-   Logistic regression is less inclined to over-fitting but it can overfit in high dimensional datasets. One may consider Regularization (L1 and L2) techniques to avoid over-fitting these scenarios.
+
+#### Disadvantages
+
+-   If the number of observations is lesser than the number of features, Logistic Regression should not be used, otherwise, it may lead to overfitting.
+
+-   It constructs linear boundaries.
+
+-   The major limitation of Logistic Regression is the assumption of linearity between the dependent variable and the independent variables.
+
+-   It can only be used to predict discrete functions. Hence, the dependent variable of Logistic Regression is bound to the discrete number set.
+
+-   Non-linear problems can't be solved with logistic regression because it has a linear decision surface. Linearly separable data is rarely found in real-world scenarios.
+
+-   Logistic Regression requires average or no multicollinearity between independent variables.
+
+-   It is tough to obtain complex relationships using logistic regression. More powerful and compact algorithms such as Neural Networks can easily outperform this algorithm.
+
+-   In Linear Regression independent and dependent variables are related linearly. But Logistic Regression needs that independent variable are linearly related to the log odds $(log(p/(1-p))$.
+
+#### Example: MNIST data set: Is it 2 or 7?
+
+The MNIST database of handwritten digits, available from this page, has a training set of 60,000 examples, and a test set of 10,000 examples. It is a subset of a larger set available from NIST. The digits have been size-normalized and centered in a fixed-size image.
+
+![](p18.png){width="457"}
+
+For this example we only include a randomly selected set of 2s and 7s along with the two predictors based on the proportion of dark pixels in the upper left and lower right quadrants respectively. 
+
+The dataset is divided into training and test sets.
+
+```{r}
+library(dslabs)
+library(tidyverse)
+library(caret)
+
+data("mnist_27")
+```
+
+Let's visualize the data set:
+
+```{r}
+mnist_27$train %>% ggplot(aes(x_1, x_2, color = y)) + geom_point()
+```
+
+Now let's fit a model using Training data set and use Testing data set to calculate the accuracy rates.
+
+```{r}
+fit_glm <- glm(y ~ x_1 + x_2, data=mnist_27$train, family = "binomial")
+
+p_hat_glm <- predict(fit_glm, mnist_27$test, type="response")
+```
+
+Re-coding:
+```{r}
+y_hat_glm <- factor(ifelse(p_hat_glm > 0.5, 7, 2))
+
+confusionMatrix(y_hat_glm, mnist_27$test$y)
+```
+
+Decision boundary:
+```{r}
+p_hat <- predict(fit_glm, newdata = mnist_27$true_p, type = "response")
+
+mnist_27$true_p %>% mutate(p_hat = p_hat) %>%
+  ggplot(aes(x_1, x_2,  z=p_hat, fill=p_hat)) +
+  geom_raster() +
+  scale_fill_gradientn(colors=c("#F8766D","white","#00BFC4")) +
+  stat_contour(breaks=c(0.5), color="black")
+```
+
+
+
+
+
+
+
+
+
+
+# K - Nearest Neighbors
+
+K Nearest Neighbors is a simple algorithm that stores all the available cases and classifies the new data or case based on a similarity measure. It is mostly used to classifies a data point based on how its neighbors are classified.
+
+-   Simple, but a very powerful classification algorithm.
+
+-   Classifies based on a similarity measure.
+
+-   Non- Parametric
+
+-   Lazy learning :
+
+    -   Does not "learn" until the test example is given
+
+    -   Whenever we have a new data to classify, we find its K-nearest neighbors from the training data.
+
+![](p12.png){width="394"}
+
+Classified by "Majority Votes" or its neighbor classes. (Assigned to the most common class amongst its K-nearest neighbors by measuring 'distance' between data.
+
+### KNN Algorithm Pseudocode:
+
+-   **Step 1:** Determine parameter K = number of nearest neighbors
+
+-   **Step 2:** Calculate the distance between the query-instance and all the training examples.
+
+-   **Step 3:** Sort the distances and determine nearest neighbors based on the k-th minimum distance.
+
+-   **Step 4:** Gather the category Y of the nearest neighbors.
+
+-   **Step 5:** Use simple majority of the category of nearest neighbors as the prediction values of the query instance.
+
+![](p13.png){width="394"}
+
+#### Exmaple KNN in two dimensions
+
+This is the true decision boundary between the two classes.
+
+![](p14.png){width="394"}
+
+![](p15.png){width="394"}
+
+![](p16.png){width="550"}
+
+As you can see from the above plots it is crucial to select an appropriate K value for the model. Lower K values might lead to under-fitting and higher K values might lead to over-fitting.
+
+#### Few ideas on picking a value for 'K'
+
+1.  There is no structured method to find the best value for "K". We need to find out with various values by trial and error and assuming that training data is unknown.
+
+2.  Choosing smaller values for K can be noisy and will have a higher influence on the result.
+
+3.  Larger values of K will have smoother decision boundaries which mean lower variance but increased bias. Also, computationally expensive.
+
+4.  Another way to choose K is though cross-validation. One way to select the cross-validation dataset from the training dataset. Take the small portion from the training dataset and call it a validation dataset, and then use the same to evaluate different possible values of K.
+
+    This way we are going to predict the label for every instance in the validation set using with K equals to 1, K equals to 2, K equals to 3.. and then we look at what value of K gives us the best performance on the validation set and then we can take that value and use that as the final setting of our algorithm so we are minimizing the validation error.
+
+![](p17.png){width="517"}
+
+5.  In general, practice, choosing the value of k is $k = \sqrt N$ where N stands for the number of samples in your training dataset.
+
+6.  Try and keep the value of k odd in order to avoid confusion between two classes of data
+
+#### When to use:
+
+-   Less than 20 attributes per instance.
+
+-   Lots of training data.
+
+#### Pros:
+
+-   Learning and implementation is extremely simple and intuitive.
+
+-   Flexible decision boundaries.
+
+-   Naturally handles multi-class cases
+
+-   Can do well in practice with enough representative data.
+
+#### Cons:
+
+-   Need to determine the value of the parameter K
+
+-   Irrelevant or correlated features have high impact and must be eliminated.
+
+-   Typically difficult to handle high dimensionality.
+
+-   Computational costs: memory and classification time computation.
+
+-   Storage of data
+
+### Example: default data set: Cts...
+
+We will use the library `class` for this.
+
+```{r}
+library(caret)
+library(ISLR)
+library(class )
+```
+
+First divide the sample in training and test
+
+```{r}
+set.seed(27)
+train=sample(c(TRUE,FALSE),size=nrow(Default),prob=c(0.6,0.4),replace=TRUE)
+
+train.X=cbind(balance,income,student)[train,] # training only for x variables 
+test.X=cbind(balance,income,student)[!train,] # testing only for x variables 
+train.default=default[train] #training set Y variable
+default.test=default[!train] # testing set Y variable
+```
+
+k-nearest neighbor function with $k=1$
+
+```{r}
+knn.pred=knn(train = train.X,test = test.X,cl = train.default,k = 1)
+confusionMatrix(knn.pred, default.test)
+```
+
+k-nearest neighbor function with $k=4$
+
+```{r}
+knn.pred=knn(train.X,test.X,train.default,k=4)
+confusionMatrix(knn.pred, default.test)
+```
+
+k-nearest neighbor function with $k=10$
+
+```{r}
+knn.pred=knn(train.X,test.X,train.default,k=10)
+confusionMatrix(knn.pred, default.test)
+```
+
+Choosing the optimal value for k.
+
+Here we will use several values for the K and try to calculate the minimum testing error rates.
+
+```{r}
+error<-rep(NA,20) # Placeholder
+
+for(i in 1:20)
+{
+  knn.pred=knn(train.X,test.X,train.default,k=i)
+  error[i]=mean(knn.pred!=default.test)
+}
+plot(error,type="b",xlab="K",ylab="Test Error")
+```
+
+```{r}
+(loc=which.min(error))
+```
+
+Therefore, according to the above results, we select $k=5$.
+
+```{r}
+knn.pred=knn(train.X,test.X,train.default,k=5)
+confusionMatrix(knn.pred, default.test)
+```
+
+### Example: Iris Data set
+
+For this example we will use Edgar Anderson's Iris Data.
+
+This famous (Fisher's or Anderson's) iris data set gives the measurements in centimeters of the variables sepal length and width and petal length and width, respectively, for 50 flowers from each of 3 species of iris. The species are Iris setosa, versicolor, and virginica.
+
+```{r}
+data(iris)
+str(iris)
+```
+
+Let's look at the data set:
+
+```{r}
+summary(iris)
+```
+
+```{r fig.height=8}
+par(mfrow=c(2,2))
+boxplot(Sepal.Length  ~ Species, iris, 
+        main = "Sepal Length wrt Species", col = "lightpink3")
+boxplot(Sepal.Width   ~ Species, iris, 
+        main = "Sepal Width wrt Species", col = "antiquewhite1")
+boxplot(Petal.Length  ~ Species, iris, 
+        main = "Petal Length wrt Species", col = "lightskyblue4")
+boxplot(Petal.Width  ~ Species, iris, 
+        main = "Petal Width wrt Species", col = "orange1")
+
+```
+
+From the above boxplots, you can identify the patterns among the three species.
+
+```{r}
+plot(iris[,1:4],col=iris$Species)
+```
+
+Now let's try to fit a KNN model for the data set.
+
+```{r}
+set.seed(299) 
+#Sample the Iris data set (70% train, 30% test)
+ir_sample<-sample(1:nrow(iris),size=nrow(iris)*.7)
+ir_train<-iris[ir_sample,] #Select the 70% of rows for training
+ir_test<-iris[-ir_sample,] #Select the 30% of rows for testing
+```
+
+```{r}
+iris_pred<-knn(train = ir_train[,-5],test =ir_test[,-5],
+            cl = ir_train$Species,k=10) #k=10
+
+#Confusion matrix
+table(ir_test$Species, iris_pred)
+
+#Misclassification error
+mean(iris_pred!=ir_test$Species)
+
+confusionMatrix(ir_test$Species, iris_pred)
+```
+
+First let's try to determine the optimal K value.
+
+```{r}
+iris_acc<-rep(NA,50) # using 50 values for K
+
+for(i in 1:50){
+  #Apply knn with k = i
+  predict<-knn(ir_train[,-5],ir_test[,-5],
+               ir_train$Species,k=i)
+  iris_acc[i]<-mean(predict==ir_test$Species) ## this is prediction accuracy
+}
+```
+
+Plot $k=1$ through 50
+
+```{r}
+plot(1-iris_acc,type="l",ylab="Error Rate",
+     xlab="K",main="Error Rate for Iris With Varying K")
+```
+
+```{r}
+#minimum k value
+which.min(1-iris_acc)
+```
+
+Here according to the plot you can see that there is no proper K values to be found. Error for the K values does not seems to behave properly.
+
+Therefore, let's try to calculate the value for K using many samples from the Iris data set.
+
+Here we will test 20 K values ranging from 1-20 but we will use 100 samples of the data set to evaluate each K value.
+
+```{r}
+trial_sum<-rep(0,20)
+trial_n<-rep(0,20)
+```
+
+```{r}
+set.seed(279)
+for(i in 1:100){
+  ir_sample<-sample(1:nrow(iris),size=nrow(iris)*.7)
+  ir_train<-iris[ir_sample,]
+  ir_test<-iris[-ir_sample,]
+  test_size<-nrow(ir_test)
+  
+  for(j in 1:20){
+    predict<-knn(ir_train[,-5],ir_test[,-5],
+                 ir_train$Species,k=j)
+    
+    trial_sum[j]<-trial_sum[j]+sum(predict==ir_test$Species)
+    trial_n[j]<-trial_n[j]+test_size
+  }
+}
+```
+
+```{r}
+plot(1-trial_sum / trial_n,type="l",ylab="Error Rate",
+     xlab="K",main="Error Rate for Iris With Varying K (100 Samples)")
+
+which.min(1-trial_sum / trial_n)
+```
+
+Therefore, we can use $k=9$ for the data set.
+
+```{r}
+iris_pred<-knn(train = ir_train[,-5],test =ir_test[,-5],
+            cl = ir_train$Species,k=10) 
+
+confusionMatrix(ir_test$Species, iris_pred)
+```
