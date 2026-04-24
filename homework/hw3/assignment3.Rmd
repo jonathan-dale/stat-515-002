@@ -54,11 +54,12 @@ a). Fit a linear regression model to predict math test scores using the variable
 library(tidyverse)
 library(dplyr)
 
-data_1a = read.csv("CASchools.csv")
+data = read.csv("CASchools.csv")
+data_1a = data
 glimpse(data_1a)
 
 # Data analysis and cleaning:
-# Remove the "country" column
+# Remove the "county" column
 # The "district" and "school" are ID attributes which are not useful for regression analysis,
 # they are removed from the data and will not be use in the model.
 # Two columns are character type, "computer" & "income", convert to numeric.
@@ -81,18 +82,14 @@ glimpse(data_1a)
 # Source: ISLRv2 https://hastie.su.domains/ISLR2/ISLRv2_corrected_June_2023.pdf.download.html
 fit1 = lm(math ~ ., data = data_1a)
 
+
 ## To see a list of hidden values use 'str(summary(model))' 
 ## https://stackoverflow.com/a/5588638
-# Extract and print r-squared and residual SE (sigma) from the model
-c(r_squared = summary(fit1)$r.squared, residual_se = summary(fit1)$sigma)
-
-
 # Extract just the p-values from the model (excluding the intercept)
-# Filter for variables where p > 0.05 (Insignificant)
+# Filter for Insignificant variables where p > 0.05
 p_values = summary(fit1)$coefficients[, "Pr(>|t|)"][-1]
 insignificant_vars = p_values[p_values > 0.05]
-cat("insignificant variables:\n")
-c(insignificant_vars)
+print(insignificant_vars)
 
 
 
@@ -102,11 +99,11 @@ data_1a_scaled = data_1a |>
   mutate(across(where(is.numeric), scale))
 
 # Fit a new model with scaled values
-fit1_std = lm(math ~ ., data_1a_scaled)
+fit1_scaled = lm(math ~ ., data_1a_scaled)
 
 
 # Extract coefficients (excluding the intercept) to find the strongest predictor
-betas = coef(fit1_std)[-1]
+betas = coef(fit1_scaled)[-1]
 strongest_beta_name = names(which.max(abs(betas)))
 strongest_beta_value = betas[strongest_beta_name]
 
@@ -129,20 +126,42 @@ c("Max |t| value:", round(max_t_value, 4))
 
 
 # # Create a pairwise correlation plot with the pairs function using only numeric columns
-# library(psych)
-# pairs.panels(data_1a |> select(where(is.numeric))) # scatter plot matrix to observe the behavior of each variable
-# 
-# 
-# # Simple regression models of income and lunch for comparison:
-# # lunch
-# fit_lunch = lm(math ~ lunch, data = data_1a)
-# c(r_squared = summary(fit_lunch)$r.squared, residual_se = summary(fit_lunch)$sigma)
+# # scatter plot matrix to observe the behavior of each variable
+library(psych)
+pairs.panels(data_1a |> select(where(is.numeric)))
+
+
+# Simple regression models  for comparison:
+# math ~ lunch
+fit_lunch = lm(math ~ lunch, data = data_1a)
+math_vs_lunch = c(r_squared = summary(fit_lunch)$r.squared, residual_se = summary(fit_lunch)$sigma)
 # cor.test(data_1a$math, data_1a$lunch, alternative = 'two.sided')
-# 
-# income
-# fit_income = lm(math ~ income, data = data_1a)
-# c(r_squared = summary(fit_income)$r.squared, residual_se = summary(fit_income)$sigma)
+
+# math ~ income
+fit_income = lm(math ~ income, data = data_1a)
+math_vs_income = c(r_squared = summary(fit_income)$r.squared, residual_se = summary(fit_income)$sigma)
 # cor.test(data_1a$math, data_1a$income, alternative = 'two.sided')
+
+
+# Extract r-squared and residual SE (sigma) from the model
+original_model = c(r_squared = summary(fit1)$r.squared, residual_se = summary(fit1)$sigma)
+
+## Full regression vs simple regression comparison.
+comparison_output_1a <- c(
+  "========================================",
+  "Original model (full regression)",
+  capture.output(print(original_model)),
+  "",
+  "Math vs lunch alone",
+  capture.output(print(math_vs_lunch)),
+  "",
+  "Math vs income alone",
+  capture.output(print(math_vs_income)),
+  "",
+  "We can see from the results above, neither lunch or income create a better model than the original.",
+  "========================================"
+)
+cat(paste(comparison_output_1a, collapse = "\n"), "\n")
 
 
 ```
@@ -151,7 +170,7 @@ c("Max |t| value:", round(max_t_value, 4))
 
 1. **Predictors vs math.** The full regression model shows strong negative association with `lunch` (Percent qualifying for reduced-price lunch), and a smaller positive association with `income` and math both clearly displayed in the plot matrix. The `expenditure`, `students`, `teachers`, and `calworks` are weaker in this fit after adjusting for the others.
 
-2. **Insignificant (p > 0.05).** Using a filter to sort variables where p > 0.05 and store this value inside a variable named `insignificant_vars`. The following have p-values above 0.05: `students`, `teachers`, `calworks`, `expenditure`; also `computer` is marginal though still above the threshold.
+2. **Insignificant values (p > 0.05).** I used a filter to sort parameters where p > 0.05, this means the parameter is insignificant and will not contribute anything meaningful to the model. Store these values inside a variable named `insignificant_vars`. The following variables have p-values above 0.05: `students`, `teachers`, `calworks`, `expenditure`; also `computer` is marginal though still above the threshold.
 
 3. **Strongest predictor.** By evidence in the data, it is clear that `lunch` has the largest |t| and smallest p-value. among the predictors making it the strongest linear signal in this model. This is found by scaling all the parameters in the data set.
 
@@ -161,6 +180,46 @@ c("Max |t| value:", round(max_t_value, 4))
 b). Do you think you can fit a better model than the model in part (a)? Fit a new model that you think is a better fit for the data. What do you observe about this new model? (Use an appropriate variable selection algorithm and use cross-validation to validate your answers).
 
 ```{r question 1.b, message=FALSE, warning=FALSE}
+
+model_full = lm(math ~ ., data = data_1a)
+model_step = step(model_full, direction = "both")
+summary(model_step)
+
+library(caret)
+set.seed(335)
+ctrl = trainControl(method = "cv", number = 10)
+cv_model = train(math ~ .,
+                 data = data_1a,
+                 method = "lm",
+                 trControl = ctrl,
+                 na.action = na.omit)
+
+# Find the cross-validated MSE
+cv_model$results$RMSE^2
+
+# Full anova analysis
+anova(fit1, model_step)
+
+# Extract r-squared and residual SE (sigma) from the new model
+step_model = c(r_squared = summary(model_step)$r.squared, residual_se = summary(model_step)$sigma)
+
+
+## Full regression (part 1a) vs VARIABLE_SELECTION comparison.
+comparison_output_1b <- c(
+  "========================================",
+  "Original model (full regression)",
+  capture.output(print(original_model)),
+  "",
+  "New model, stepwise selection",
+  capture.output(print(step_model)),
+  "",
+  "New stepwise selection model part anov",
+  capture.output(print(anova(fit1, model_step))),
+  "",
+  "We can see from the results above that the new model preforms slightly better than the original model",
+  "========================================"
+)
+cat(paste(comparison_output_1b, collapse = "\n"), "\n")
 
 
 ```
