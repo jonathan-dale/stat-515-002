@@ -3,12 +3,11 @@ title: "Homework 3"
 author: "Jonathan Dale"
 date: "`r Sys.Date()`"
 output:
-  pdf_document: default
   html_document:
     df_print: paged
     code_folding: show   # all chunks shown by default, can change to hide
+  pdf_document: default
 ---
-
 ```{css, echo=FALSE}
 
 <!-- define CSS rules to limit the height of code blocks -->
@@ -32,7 +31,6 @@ pre[class] {
 */
 ```
 
-
 Instructions: Include all codes and R-outputs that are necessary for each question. Submission: You MUST submit a PDF file.
 
 #### Question 1: Regression Models:
@@ -52,50 +50,136 @@ a). Fit a linear regression model to predict math test scores using the variable
 
 4.  Explain the interpretation of the coefficient on lunch in terms of the response variable.
 
-```{r question 1}
+```{r question 1.a, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(dplyr)
 
-# load packages
-data = read.csv("CASchools.csv")
-glimpse(data)
-summary(data)
+data_1a = read.csv("CASchools.csv")
+glimpse(data_1a)
 
-# Remove country attribute
-data = data %>% select(-county)
-glimpse(data)
+# Data analysis and cleaning:
+# Remove the "country" column
+# The "district" and "school" are ID attributes which are not useful for regression analysis,
+# they are removed from the data and will not be use in the model.
+# Two columns are character type, "computer" & "income", convert to numeric.
+# The "grades" column is also character type, convert to factor for analysis.
+data_1a = read.csv("CASchools.csv") |>
+  select(-county, -district, -school) |>
+  mutate(
+    across(
+      c(students, computer, income),
+      ~ suppressWarnings(as.numeric(.x))
+    ),
+    grades = factor(grades)
+  )
 
-# create linear model
+glimpse(data_1a)
+
+
+
+# Multiple linear regression (ISLR2 §3.6.3)
 # Source: ISLRv2 https://hastie.su.domains/ISLR2/ISLRv2_corrected_June_2023.pdf.download.html
-# 3.6.3 Multiple Linear Regression (page 114) 
-fit1 = lm(math ~ ., data = data)
-summary(fit1)
-fit1
+fit1 = lm(math ~ ., data = data_1a)
 
-confint(fit1)
-names(fit1)
-
-
-# We can use the library psych to create a more interesting plot.
-library(psych)
-pairs.panels(data)
+## To see a list of hidden values use 'str(summary(model))' 
+## https://stackoverflow.com/a/5588638
+# Extract and print r-squared and residual SE (sigma) from the model
+c(r_squared = summary(fit1)$r.squared, residual_se = summary(fit1)$sigma)
 
 
-fit2 = lm(math ~ data$income, data)
-summary(fit2)
-summary(fit2)$r.sq
-summary(fit2)$sigma
+# Extract just the p-values from the model (excluding the intercept)
+# Filter for variables where p > 0.05 (Insignificant)
+p_values = summary(fit1)$coefficients[, "Pr(>|t|)"][-1]
+insignificant_vars = p_values[p_values > 0.05]
+cat("insignificant variables:\n")
+c(insignificant_vars)
 
+
+
+# Find the strongest predictor with scaling of all the variables
+# Create a new model using scaled variables.
+data_1a_scaled = data_1a |>
+  mutate(across(where(is.numeric), scale))
+
+# Fit a new model with scaled values
+fit1_std = lm(math ~ ., data_1a_scaled)
+
+
+# Extract coefficients (excluding the intercept) to find the strongest predictor
+betas = coef(fit1_std)[-1]
+strongest_beta_name = names(which.max(abs(betas)))
+strongest_beta_value = betas[strongest_beta_name]
+
+c("Strongest Predictor:", strongest_beta_name)
+
+
+# Remove the insignificant variables to find largest |t|
+data_1a_significant = data_1a_scaled |> select(-names(insignificant_vars))
+names(data_1a_significant)
+fit1_sig = lm(math ~ ., data_1a_significant)
+
+t_values_std = summary(fit1_sig)$coefficients[, "t value"][-1]
+max_t_name = names(which.max(abs(t_values_std)))
+max_t_value = t_values_std[max_t_name]
+
+c("Max |t| value:", round(max_t_value, 4))
+
+
+
+
+
+# # Create a pairwise correlation plot with the pairs function using only numeric columns
+# library(psych)
+# pairs.panels(data_1a |> select(where(is.numeric))) # scatter plot matrix to observe the behavior of each variable
+# 
+# 
+# # Simple regression models of income and lunch for comparison:
+# # lunch
+# fit_lunch = lm(math ~ lunch, data = data_1a)
+# c(r_squared = summary(fit_lunch)$r.squared, residual_se = summary(fit_lunch)$sigma)
+# cor.test(data_1a$math, data_1a$lunch, alternative = 'two.sided')
+# 
+# income
+# fit_income = lm(math ~ income, data = data_1a)
+# c(r_squared = summary(fit_income)$r.squared, residual_se = summary(fit_income)$sigma)
+# cor.test(data_1a$math, data_1a$income, alternative = 'two.sided')
 
 
 ```
 
+**Discussion (Question 1a).**
 
+1. **Predictors vs math.** The full regression model shows strong negative association with `lunch` (Percent qualifying for reduced-price lunch), and a smaller positive association with `income` and math both clearly displayed in the plot matrix. The `expenditure`, `students`, `teachers`, and `calworks` are weaker in this fit after adjusting for the others.
+
+2. **Insignificant (p > 0.05).** Using a filter to sort variables where p > 0.05 and store this value inside a variable named `insignificant_vars`. The following have p-values above 0.05: `students`, `teachers`, `calworks`, `expenditure`; also `computer` is marginal though still above the threshold.
+
+3. **Strongest predictor.** By evidence in the data, it is clear that `lunch` has the largest |t| and smallest p-value. among the predictors making it the strongest linear signal in this model. This is found by scaling all the parameters in the data set.
+
+4. **`lunch` coefficient.** With other predictors held fixed, each **one percentage-point** increase in `lunch` is associated with an estimated **decrease** of about **0.37** points in average `math` test score. In other words, areas with higher percent of students qualifying for reduced-price lunch, our model predicts a significantly larger portion of students with lower average math scores than areas with lower percentage of students on reduced-prices lunch.
 
 
 b). Do you think you can fit a better model than the model in part (a)? Fit a new model that you think is a better fit for the data. What do you observe about this new model? (Use an appropriate variable selection algorithm and use cross-validation to validate your answers).
 
+```{r question 1.b, message=FALSE, warning=FALSE}
+
+
+```
+
+**1.b** By using Variable Selections methods we can choose a better model. We use best subset selection, 
+
+
+
 c). Write the equation for the least square fit from part b).
 
+```{r}
+
+```
+
 d). Compare the R2 and Testing MSE for models from part (a) and (b).
+
+```{r}
+
+```
 
 e). Using a residuals plot for part a and part b models, state the appropriateness of using a linear model for this problem.
 
