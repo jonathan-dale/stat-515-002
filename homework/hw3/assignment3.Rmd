@@ -8,28 +8,6 @@ output:
     code_folding: show   # all chunks shown by default, can change to hide
   pdf_document: default
 ---
-```{css, echo=FALSE}
-
-<!-- define CSS rules to limit the height of code blocks -->
-
-pre {
-  max-height: 600px;
-  overflow-y: auto;
-}
-
-pre[class] {
-  max-height: 900px;
-}
-
-.scroll-100 {
-  max-height: 300px;
-  overflow-y: auto;
-  background-color: inherit;
-}
-/*
-  Source https://bookdown.org/yihui/rmarkdown-cookbook/html-scroll.html
-*/
-```
 
 Instructions: Include all codes and R-outputs that are necessary for each question. Submission: You MUST submit a PDF file.
 
@@ -54,8 +32,8 @@ a). Fit a linear regression model to predict math test scores using the variable
 library(tidyverse)
 library(dplyr)
 
-data = read.csv("CASchools.csv")
-data_1a = data
+data_1a = read.csv("CASchools.csv")
+# data_1a = data
 glimpse(data_1a)
 
 # Data analysis and cleaning:
@@ -72,7 +50,15 @@ data_1a = read.csv("CASchools.csv") |>
       ~ suppressWarnings(as.numeric(.x))
     ),
     grades = factor(grades)
-  )
+  ) |>
+  drop_na() # complete cases only
+
+# Train / test split (80/20) for model evaluation.
+set.seed(335)
+n_1a = nrow(data_1a)
+train_idx = sample.int(n_1a, size = floor(0.8 * n_1a))
+train = data_1a[train_idx, , drop = FALSE]
+test = data_1a[-train_idx, , drop = FALSE]
 
 glimpse(data_1a)
 
@@ -93,8 +79,8 @@ print(insignificant_vars)
 
 
 
-# Find the strongest predictor with scaling of all the variables
-# Create a new model using scaled variables.
+# Find the strongest predictor, scaling of all the variables
+# Then create a new model using scaled variables.
 data_1a_scaled = data_1a |>
   mutate(across(where(is.numeric), scale))
 
@@ -135,33 +121,44 @@ pairs.panels(data_1a |> select(where(is.numeric)))
 # math ~ lunch
 fit_lunch = lm(math ~ lunch, data = data_1a)
 math_vs_lunch = c(r_squared = summary(fit_lunch)$r.squared, residual_se = summary(fit_lunch)$sigma)
-# cor.test(data_1a$math, data_1a$lunch, alternative = 'two.sided')
 
 # math ~ income
 fit_income = lm(math ~ income, data = data_1a)
 math_vs_income = c(r_squared = summary(fit_income)$r.squared, residual_se = summary(fit_income)$sigma)
-# cor.test(data_1a$math, data_1a$income, alternative = 'two.sided')
 
 
-# Extract r-squared and residual SE (sigma) from the model
-original_model = c(r_squared = summary(fit1)$r.squared, residual_se = summary(fit1)$sigma)
-
-## Full regression vs simple regression comparison.
-comparison_output_1a <- c(
-  "========================================",
-  "Original model (full regression)",
-  capture.output(print(original_model)),
-  "",
-  "Math vs lunch alone",
-  capture.output(print(math_vs_lunch)),
-  "",
-  "Math vs income alone",
-  capture.output(print(math_vs_income)),
-  "",
-  "We can see from the results above, neither lunch or income create a better model than the original.",
-  "========================================"
+# Extract R-squared and residual SE (sigma) from each fit for side-by-side comparison
+original_model = c(
+  r_squared = summary(fit1)$r.squared,
+  residual_se = summary(fit1)$sigma
 )
-cat(paste(comparison_output_1a, collapse = "\n"), "\n")
+
+comparison_1a = tibble(
+  model = c(
+    "Full: math ~ . (all predictors)",
+    "Simple: math ~ lunch",
+    "Simple: math ~ income"
+  ),
+  r_squared = c(
+    unname(original_model["r_squared"]),
+    unname(math_vs_lunch["r_squared"]),
+    unname(math_vs_income["r_squared"])
+  ),
+  residual_se = c(
+    unname(original_model["residual_se"]),
+    unname(math_vs_lunch["residual_se"]),
+    unname(math_vs_income["residual_se"])
+  )
+)
+
+print(comparison_1a)
+
+# knitr::kable(
+#   comparison_1a,
+#   digits = 4,
+#   col.names = c("Model", "R-squared", "Residual standard error"),
+#   caption = "Full multiple regression versus one-predictor models (same training data)."
+# )
 
 
 ```
@@ -181,66 +178,149 @@ b). Do you think you can fit a better model than the model in part (a)? Fit a ne
 
 ```{r question 1.b, message=FALSE, warning=FALSE}
 
-model_full = lm(math ~ ., data = data_1a)
-model_step = step(model_full, direction = "both")
-summary(model_step)
-
 library(caret)
 set.seed(335)
-ctrl = trainControl(method = "cv", number = 10)
-cv_model = train(math ~ .,
-                 data = data_1a,
-                 method = "lm",
-                 trControl = ctrl,
-                 na.action = na.omit)
 
-# Find the cross-validated MSE
-cv_model$results$RMSE^2
+# Start from the full model and use bidirectional stepwise selection.
+model_full = lm(math ~ ., data = data_1a)
+model_step = step(model_full, direction = "both", trace = 0)
+summary(model_step)
 
-# Full anova analysis
-anova(fit1, model_step)
+# Use the selected predictors to define a reduced formula.
+selected_terms = attr(terms(model_step), "term.labels")
+formula_step = as.formula(paste("math ~", paste(selected_terms, collapse = " + ")))
 
-# Extract r-squared and residual SE (sigma) from the new model
-step_model = c(r_squared = summary(model_step)$r.squared, residual_se = summary(model_step)$sigma)
-
-
-## Full regression (part 1a) vs VARIABLE_SELECTION comparison.
-comparison_output_1b <- c(
-  "========================================",
-  "Original model (full regression)",
-  capture.output(print(original_model)),
-  "",
-  "New model, stepwise selection",
-  capture.output(print(step_model)),
-  "",
-  "New stepwise selection model part anov",
-  capture.output(print(anova(fit1, model_step))),
-  "",
-  "We can see from the results above that the new model preforms slightly better than the original model",
-  "========================================"
+# Compare full vs selected model with the same CV scheme.
+ctrl = trainControl(method = "repeatedcv", number = 10, repeats = 5)
+cv_full = train(
+  math ~ .,
+  data = data_1a,
+  method = "lm",
+  trControl = ctrl,
+  na.action = na.omit
 )
-cat(paste(comparison_output_1b, collapse = "\n"), "\n")
+cv_step = train(
+  formula_step,
+  data = data_1a,
+  method = "lm",
+  trControl = ctrl,
+  na.action = na.omit
+)
 
+# Model-comparison table.
+comparison_1b = tibble(
+  model = c(
+    "Full model (part a)",
+    "Stepwise-selected model (part b)"
+    ),
+  cv_rmse = c(
+    cv_full$results$RMSE[1],
+    cv_step$results$RMSE[1]
+    ),
+  cv_mse = cv_rmse^2,
+  cv_r2 = c(
+    cv_full$results$Rsquared[1],
+    cv_step$results$Rsquared[1]
+    ),
+  adj_r2 = c(
+    summary(model_full)$adj.r.squared,
+    summary(model_step)$adj.r.squared
+    ),
+  aic = c(
+    AIC(model_full),
+    AIC(model_step)
+    ),
+  bic = c(
+    BIC(model_full),
+    BIC(model_step)
+    )
+)
+
+anova_compare = anova(model_full, model_step)
+
+cat("Selected predictors in stepwise model:\n")
+print(selected_terms)
+cat("\nCross-validated comparison:\n")
+print(comparison_1b)
+cat("\nNested model ANOVA (full vs stepwise):\n")
+print(anova_compare)
+
+# source: https://topepo.github.io/caret/subsampling-for-class-imbalances.html
 
 ```
 
-**1.b** By using Variable Selections methods we can choose a better model. We use best subset selection, 
+**Discussion (Question 1b).**
+
+1.b **Model comparison.** I used bidirectional stepwise selection (AIC criterion) to obtain a reduced model and then validated both the original full model and the reduced model using repeated 10-fold cross-validation. The selected model keeps only predictors that improve fit after accounting for the others, making it more interpretable with fewer terms.
+
+Comparing cross-validated MSE (and CV \(R^2\)) between models is the key evidence for whether part (b) is truly better than part (a). If the stepwise model has lower CV MSE and similar or higher CV \(R^2\), then it is a better out-of-sample model; if metrics are very close, the reduced model is still preferable for parsimony.
 
 
 
 c). Write the equation for the least square fit from part b).
 
-```{r}
-
+```{r question 1.c, message=FALSE, warning=FALSE}
+# Display the coeficients
+round(coef(model_step), 2)
 ```
+
+**Discussion (Question 1c).**
+
+1.c **Least squares equation.** Following the formula: `𝑌=𝛽0+𝛽1𝑋1+...+𝛽𝑝𝑋𝑝+𝜖` and using the coefficients function we can see the exact values for each beta value. Combining these two pieces to form the equation the least square fit: `Y = 665.10 - 3.84 * gradesKK-08 + 0.00 * students - 0.09 * calworks - 0.36 * lunch + 0.01 * computer + 0.69 * income - 0.08 english`
+
+
 
 d). Compare the R2 and Testing MSE for models from part (a) and (b).
 
-```{r}
-
+```{r question 1.d, message=FALSE, warning=FALSE}
+# Model-comparison table from 1.b.
+print(comparison_1b)
 ```
 
+**Discussion (Question 1d).**
+
+1.d **Compare R^2 and MSE** The R^2 and MSE values drop slightly in the stepwise-selected model (part b), lower R2 and RMSE mean better preformence. 
+
+
+
 e). Using a residuals plot for part a and part b models, state the appropriateness of using a linear model for this problem.
+
+```{r question 1.e, message=FALSE, warning=FALSE}
+library(ggplot2)
+
+# Create a data frame of fitted values and residuals
+full_df <- data.frame(Fitted = fitted(model_full), Residuals = resid(model_full))
+step_df <- data.frame(Fitted = fitted(model_step), Residuals = resid(model_step))
+
+# Generate the full model plot
+ggplot(full_df, aes(x = Fitted, y = Residuals)) +
+  geom_point() +
+  geom_smooth(method = "loess") +
+  labs(title = "Residual Plot Full Model", x = "Fitted Values", y = "Residuals") +
+  theme_minimal()
+
+# Generate the step model plot
+ggplot(step_df, aes(x = Fitted, y = Residuals)) +
+  geom_point() +
+  geom_smooth(method = "loess", se = TRUE, color = "blue") + # Add a trend line
+  labs(title = "Residual Plot Step Model", x = "Fitted Values", y = "Residuals") +
+  theme_minimal()
+
+
+# source: https://rpubs.com/sharmaar3/Residual_Plots
+```
+
+
+**Discussion (Question 1e).**
+
+1.e **Why a linear model is appropriate here** Using regression analysis allows us to understand the relationship between the variables, which predictors are statistically significant (and which are not), and provides a confidence level for each coefficient. Finely, regression analysis is easier to understand and explain to others vs a more complicated model (black box).
+
+The following reasons make it appropriate to use a Liner model:  
+  * Liner relationship: The lunch variable shows clear liner pattern.  
+  * Continuous Target: The math score is continuous and numerical.  
+  * Independence: Each observation is independent of the others.  
+
+
 
 f). Incorporate an interaction term into your multiple linear regression and respond to the following:
 <!-- ISLR book, page 127, 3.6.4 Interaction Terms -->
@@ -249,13 +329,125 @@ f). Incorporate an interaction term into your multiple linear regression and res
 
 2.  Compare your results with the models from parts a) and b).
 
-g). Fit a 'Ridge Regression' Model for the dataset and interpret the results.
+```{r question 1.f, message=FALSE, warning=FALSE}
+model_f <- lm(math ~ . + lunch:income, data = train)
+summary(model_f)
+# pred_f <- predict(model_f, newdata = test)
+# mse_f <- mean((test$math - pred_f)^2)
+summary(fit1)
+```
 
-h). Fit a 'LASSO Regression' model for the dataset and interpret the results.
+**Discussion (Question 1f).**
+
+f.1 Part a uses the full model including variable predictors for both `lunch`, a measure of poverty or needs, and `income`, a district-level resource. The link between lunch eligibility and math scores can used to determine weather the interaction is greater than any of the predictors alone. 
+
+f.2 In comparison between models from part a) and b) we find that....
+
+
+
+g). Fit a 'Ridge Regression' Model for the dataset and interpret the results.  
+h). Fit a 'LASSO Regression' model for the dataset and interpret the results.  
+
+```{r g and h, ridge and lasso}
+library(glmnet)
+x_train <- model.matrix(math ~ ., train)[, -1]
+y_train <- train$math
+x_test  <- model.matrix(math ~ ., test)[, -1]
+y_test  <- test$math
+
+set.seed(335)
+# Ridge (alpha = 0)
+cv_ridge <- cv.glmnet(x_train, y_train, alpha = 0)
+plot(cv_ridge)
+pred_ridge <- predict(cv_ridge, s = cv_ridge$lambda.min, newx = x_test)
+mse_ridge <- mean((y_test - pred_ridge)^2)
+
+# View selected Ridge coefficients at lambda = 4
+cat("View selected Ridge coefficients at lambda = 4\n")
+coef(cv_ridge, s = 4)
+
+# LASSO (alpha = 1)
+cv_lasso <- cv.glmnet(x_train, y_train, alpha = 1)
+plot(cv_lasso)
+pred_lasso <- predict(cv_lasso, s = cv_lasso$lambda.min, newx = x_test)
+mse_lasso <- mean((y_test - pred_lasso)^2)
+
+# View selected LASSO coefficients
+cat("View selected LASSO coefficients\n")
+coef(cv_lasso, s = cv_lasso$lambda.min)
+
+
+```
+
+**Discussion (Question 1g and 1h).** 
+Ridge regressions advantage over least squares is rooted in the bias-variance trade-off. As λ increases, the flexibility of the ridge regression fit decreases, leading to decreased variance but increased bias.  
+Lasso uses the same setup as ridge to predict math with all other predictors in the train split.  
+Lasso vs Ridge:  
+Using `glmnet` with an `alpha = 1` gives Lasso, and `alpha = 0` gives Ridge. 
+
+
+
+
+
+
+
+
 
 i). Compare all Testing MSE values that you got from parts a,b,f,g and h. Which model do you recommend?
 
+```{r question 1.i, Comparison}
+# Testing MSE from a,b,f,g and h - wich one to recomend
+library(glmnet)
 
+# Keep model comparison fair: same train/test split and same response.
+y_test = test$math
+
+# (a) Full linear model
+pred_a = predict(model_full, newdata = test)
+mse_a = mean((y_test - pred_a)^2)
+
+# (b) Stepwise linear model
+pred_b = predict(model_step, newdata = test)
+mse_b = mean((y_test - pred_b)^2)
+
+# (f) Interaction model
+pred_f = predict(model_f, newdata = test)
+mse_f = mean((y_test - pred_f)^2)
+
+# (g) Ridge: use CV-selected lambda on training data
+x_train = model.matrix(math ~ ., train)[, -1]
+x_test  = model.matrix(math ~ ., test)[, -1]
+y_train = train$math
+
+set.seed(335)
+cv_ridge = cv.glmnet(x_train, y_train, alpha = 0)
+pred_g = predict(cv_ridge, s = cv_ridge$lambda.min, newx = x_test)
+mse_g = mean((y_test - pred_g)^2)
+
+# (h) LASSO: use CV-selected lambda on training data
+set.seed(335)
+cv_lasso = cv.glmnet(x_train, y_train, alpha = 1)
+pred_h = predict(cv_lasso, s = cv_lasso$lambda.min, newx = x_test)
+mse_h = mean((y_test - pred_h)^2)
+
+# Collect and rank
+model_mse = tibble(
+  model = c("a: Full OLS", "b: Stepwise OLS", "f: OLS + lunch:income", "g: Ridge (CV lambda.min)", "h: LASSO (CV lambda.min)"),
+  test_mse = c(mse_a, mse_b, mse_f, mse_g, mse_h)
+) |>
+  dplyr::arrange(test_mse) |>
+  dplyr::mutate(delta_from_best = test_mse - min(test_mse))
+
+print(model_mse)
+
+best_model = model_mse$model[1]
+cat("\nRecommended by lowest test MSE:", best_model, "\n")
+
+# Optional: if models are very close, choose the simpler one (parsimony).
+cat("If top models differ by < 1-2 MSE points, prefer the simpler/interpretable model.\n")
+```
+
+**Discussion (Question 1i).** I compared models a, b, f, g, and h using the same train/test split. The stepwise model (b) has the lowest test MSE, so this is the best predictive model of the group. Full OLS (part a) and ridge (part g) were close but not better. The stepwise model is a good balance of accuracy and interpretability.
 
 
 #### Problem 2: Tree based models:
@@ -275,8 +467,61 @@ e).  Use random forests to analyze this data. What test MSE do you obtain?
 f).  Use the *importance()* function to determine which variables are most important.
 
 
+```{r Problem 2}
+library(tree)
+library(randomForest)
+
+# This dataset is semicolon-separated (CSV2-style), not comma-separated.
+wine <- read.csv("winequality.csv", sep = ";")
+glimpse(wine)
+summary(wine)
 
 
+# Train/test split
+set.seed(335)
+n <- nrow(wine)
+train_idx <- sample.int(n, size = floor(0.8 * n))
+train_w <- wine[train_idx, ]
+test_w  <- wine[-train_idx, ]
+
+# Regression Tree
+tree_model <- tree(quality ~ ., data = train_w)
+plot(tree_model); text(tree_model, pretty = 0)
+pred_tree <- predict(tree_model, newdata = test_w)
+mse_tree <- mean((test_w$quality - pred_tree)^2)
+
+# Cross-Validation for Pruning
+cv_tree <- cv.tree(tree_model, FUN = prune.tree)
+best_size <- cv_tree$size[which.min(cv_tree$dev)]
+pruned <- prune.tree(tree_model, best = best_size)
+pred_pruned <- predict(pruned, newdata = test_w)
+mse_pruned <- mean((test_w$quality - pred_pruned)^2)
+
+# Random Forest
+rf_model <- randomForest(quality ~ ., data = train_w, mtry = 4, ntree = 500, importance = TRUE)
+pred_rf <- predict(rf_model, newdata = test_w)
+mse_rf <- mean((test_w$quality - pred_rf)^2)
+
+# Variable Importance
+importance(rf_model)
+varImpPlot(rf_model)
+
+# Display results
+wine_model_mse = tibble(
+  model = c("Tree", "Pruned", "RF"),
+  test_mse = c(mse_tree, mse_pruned, mse_rf)
+) |>
+  dplyr::arrange(test_mse) |>
+  dplyr::mutate(delta_from_best = test_mse - min(test_mse))
+
+print(wine_model_mse)
+```
+
+**Question 2 Discussion **
+The `print(wine_model_mse)` shows that Random Forest has the smallest MSE `0.424` while both the full tree and pruned tree are about the same value of `0.623`. This means that pruning did not help and Random Forest preformed the best.   
+Cross validation selected the pruned tree but pruning did not improve test performance (test MSE stayed about the same `0.623`).   
+The Random Forest achieved the lowest test MSE, substantially better than both tree models, so it is the preferred model for prediction on this data set.   
+The variable importance results indicate that `alcohol` is the strongest predictor of wine quality, with secondary contributions from variables such as `volatile.acidity`, `density` and `free.sulfur.dioxide` while remaining predictors have comparatively smaller effects.  
 
 
 
