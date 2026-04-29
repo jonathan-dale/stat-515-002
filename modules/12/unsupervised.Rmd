@@ -1,0 +1,1130 @@
+---
+title: "Unsupervised Learning"
+author: "Dr. Isuru Dassanayake"
+date: "`r Sys.Date()`"
+output: rmdformats::robobook
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE)
+```
+
+# Unsupervised Learning
+
+Unsupervised learning is a branch of machine learning that is used to find underlying patterns in data and is often used in exploratory data analysis. Unsupervised learning does not use labeled data like supervised learning, but instead focuses on the data sets features. Labeled training data has a corresponding output for each input. When using unsupervised learning, we are not concerned with the targeted outputs because the goal of the algorithm is to find relationships within the data and group data points based on the input data alone. Supervised learning is concerned with labeled data in order to make predictions, but unsupervised learning is not.
+
+The goal of unsupervised learning algorithms is to analyze data and find important features. Unsupervised learning will often find subgroups or hidden patterns within the dataset that a human observer may not pick up on.
+
+![](p1.png){width="507"}
+
+With the given image above, you can probably pick out the subgroups, but with a more complex dataset, these subgroups may not be so easy to find. This is where unsupervised learning can help us.
+
+In this section we discuss two methods:
+
+1.  ***Principal Components Analysis***, a tool used for data visualization or data pre-processing before supervised techniques are applied
+
+2.  ***Clustering***, a broad class of methods for discovering unknown subgroups in data.
+
+# Principal Component Analysis (PCA)
+
+When we work on a huge dataset, we usually see a large number of variables scattered with huge amounts of variances among them which makes it difficult to work with and in turn reduces the efficiency of our model. When working with such kind of large datasets, it's nearly impossible and exhausting to individually engineer every variable. That's when principal component analysis comes into play.
+
+Multivariate analysis often starts with a huge number of correlated variables. The principal component analysis is a dimension-reduction tool that can be used to reduce the overall size or dimension of the variable set while still managing to keep the most important information within the main set.
+
+The principal component analysis follows a set of statistical mathematical procedures to transform a set of correlated variables into a set of unrelated variables called [principal components.]{.underline}
+
+Traditionally principal component analysis is done on a symmetric square matrix and is often confused with a similar multivariate analysis procedure called Factor Analysis.
+
+It can be a pure sum of squares and cross-product or SSCP matrix, scaled sum of squares and cross product Covariance matrix, the sum of squares and cross products from standardized data i.e. Correlation matrix.
+
+## Objectives of PCA
+
+-   PCA reduces attribute or characteristic space from a larger set of variables into a smaller set of factors and does not depend on the dependent variable to be specified, or in other words, PCA is a 'non-dependent' type of procedure.
+
+-   PCA is a data compression or dimensionality reduction technique: The goal of PCA is to reduce the space between the variables and there is no guarantee that the dimensions are interpretable .
+
+-   PCA basically [creates a subset of variables from the main set]{.underline} based on which all variables from the main set have the highest correlation with the prime components.
+
+## Eigenvalues & Eigenvectors
+
+Eigenvectors also known as principal components reflect both the unique and common variances of the variables and is generally considered to be a variance focused approach to reproduce both the total variable variance with all components and to reproduce the correlation.
+
+The principal components are linear combinations of the original variables weighted by their contribution to defining the variance in a particular orthogonal dimension.
+
+Eigenvalues are also known as characteristic roots. The general aim of an eigenvalue is to measure the variance for a given factor in all the variables accounted for by that factor.
+
+If the eigenvalue of a certain factor is low, the that means the contribution of that factor in explaining the variances in the variables is low and such values might be ignored.
+
+A factor's eigenvalue is the sum of its squared factor loadings for all the variables.
+
+**Definition:**
+
+Let $A$ be an $n \times n$ matrix.
+
+1.  An eigenvector of $A$ is a nonzero vector $v$ in $\mathbf{R}^n$ such that $A v=\lambda v$, for some scalar $\lambda$.
+
+2.  An eigenvalue of $A$ is a scalar $\lambda$ such that the equation $A v=\lambda v$ has a nontr solution. If $A v=\lambda v$ for $v \neq 0$, we say that $\lambda$ is the eigenvalue for $v$, and that $v$ is an eigenvector for $\lambda$.
+
+## Steps for PCA
+
+1.  Standardize the range of continuous initial variables.
+
+2.  Compute the covariance matrix to identify correlations.
+
+3.  Compute the eigenvectors and eigenvalues of the covariance matrix to identify the principal components.
+
+4.  Create a feature vector to decide which principal components to keep.
+
+5.  Recast the data along the principal components axes.
+
+#### Step 1: Standardization
+
+The aim of this step is to standardize the range of the continuous initial variables so that each one of them contributes equally to the analysis.
+
+More specifically, the reason why it is critical to perform standardization prior to PCA, is that the latter is quite sensitive regarding the variances of the initial variables. That is, if there are large differences between the ranges of initial variables, those variables with larger ranges will dominate over those with small ranges (for example, a variable that ranges between $o$ and 100 will dominate over a variable that ranges between $o$ and 1 ), which will lead to biased results. So, transforming the data to comparable scales can prevent this problem.
+
+Mathematically, this can be done by subtracting the mean and dividing by the standard deviation for each value of each variable. $$
+z=\frac{\text { value - mean }}{\text { standard deviation }}
+$$ Once the standardization is done, all the variables will be transformed to the same scale.
+
+#### Step 2: Covariance Matrix calculation
+
+The aim of this step is to understand how the variables of the input data set are varying from the mean with respect to each other, or in other words, to see if there is any relationship between them. Because sometimes, variables are highly correlated in such a way that they contain redundant information. So, in order to identify these correlations, we compute the covariance matrix.
+
+The covariance matrix is a $p \times p$ symmetric matrix (where $p$ is the number of dimensions) that has as entries the covariances associated with all possible pairs of the initial variables. For example, for a 3-dimensional data set with 3 variables $x, y$, and $z$, the covariance matrix is a $3 \times 3$ data matrix of this from:
+
+$$
+\left[\begin{array}{ccc}
+\operatorname{Cov}(x, x) & \operatorname{Cov}(x, y) & \operatorname{Cov}(x, z) \\
+\operatorname{Cov}(y, x) & \operatorname{Cov}(y, y) & \operatorname{Cov}(y, z) \\
+\operatorname{Cov}(z, x) & \operatorname{Cov}(z, y) & \operatorname{Cov}(z, z)
+\end{array}\right]
+$$
+
+What do the covariances that we have as entries of the matrix tell us about the correlations between the variables?
+
+It's actually the sign of the covariance that matters:
+
+-   If positive then: the two variables increase or decrease together (correlated)
+
+-   If negative then: one increases when the other decreases (Inversely correlated)
+
+The covariance matrix is not more than a table that summarizes the correlations between all the possible pairs of variables.
+
+#### Step 3: Compute the Eigenvalues and the Eigenvectors.
+
+Eigenvectors and eigenvalues are the linear algebra concepts that we need to compute from the covariance matrix in order to determine the principal components of the data.
+
+Please see this articles on how to calculate the eigenvalues and eigenvectors:
+
+1.  [Article 1](https://lpsa.swarthmore.edu/MtrxVibe/EigMat/MatrixEigen.html)
+
+2.  [Article 2](https://www.mathsisfun.com/algebra/eigenvalue.html)
+
+3.  [Article 3](https://www.cs.cmu.edu/~elaw/papers/pca.pdf)
+
+Every eigenvector has an eigenvalue. And their number is equal to the number of dimensions of the data. For example, for a 3-dimensional data set, there are 3 variables, therefore there are 3 eigenvectors with 3 corresponding eigenvalues.
+
+Principal components are new variables that are constructed as linear combinations or mixtures of the initial variables. These combinations are done in such a way that the new variables (i.e., principal components) are uncorrelated and most of the information within the initial variables is squeezed or compressed into the first components.
+
+The first principal component of a set of features $X_1, X_2, \ldots, X_p$ is the normalized linear combination of the features $$
+Z_1=\phi_{11} X_1+\phi_{21} X_2+\ldots+\phi_{p 1} X_p
+$$ that has the largest variance. By normalized, we mean that $\sum_{j=1}^p \phi_{j 1}^2=1$
+
+We refer to the elements $\phi_{11}, \ldots, \phi_{p 1}$ as the loadings of the first principal component(eigenvector value for the first eigen value); together, the loadings make up the principal component loading vector, $\phi_1=\left(\begin{array}{llll}\phi_{11} & \phi_{21} & \ldots & \phi_{p 1}\end{array}\right)^T$
+
+So, the idea is 10-dimensional data gives you 10 principal components, but PCA tries to put maximum possible information in the first component (largest variance), then maximum remaining information in the second and so on.
+
+Organizing information in principal components this way, will allow you to reduce dimensionality without losing much information, and this by discarding the components with low information and considering the remaining components as your new variables.
+
+An important thing to realize here is that the principal components are less interpretable and don't have any real meaning since they are constructed as linear combinations of the initial variables.
+
+Geometrically speaking, principal components represent the directions of the data that explain a maximal amount of variance, that is to say, the lines that capture most information of the data. The relationship between variance and information here, is that, the larger the variance carried by a line, the larger the dispersion of the data points along it, and the larger the dispersion along a line, the more information it has. To put all this simply, just think of principal components as new axes that provide the best angle to see and evaluate the data, so that the differences between the observations are better visible.
+
+![The population size (pop) and ad spending (ad) for 100 different cities are shown as purple circles. The green solid line indicates the first principal component direction, and the blue dashed line indicates the second principal component direction.](p2.png){width="599"}
+
+#### Step 4: Feature Vector
+
+In this step, what we do is, to choose whether to keep all these components or discard those of lesser significance (of low eigenvalues), and form with the remaining ones a matrix of vectors that we call Feature vector.
+
+Since PCA tries to put maximum possible information in the first component, then maximum remaining information in the second and so on, it is important to construct a plot that illustrates the significant on the Principal Components.
+
+##### Scree plot
+
+![Percentage of Variance (Information) for each by PC.](p3.png){width="488"}
+
+Here the above plot is called 'Scree plot' and from this plot we can observe the Proportion of Variance Explained (PVE) by each PC.
+
+##### How many principal components should we use?
+
+If we use principal components as a summary of our data, how many components are sufficient?
+
+No simple answer to this question, as cross-validation is not available for this purpose.
+
+The "scree plot" on the can be used as a guide: we look for an "elbow".
+
+The scree plot criterion looks for the "elbow" in the curve and selects all components just before the line flattens out.
+
+![](p4.png){width="463"}
+
+(In the PCA literature, the plot is called a 'Scree' Plot because it often looks like a 'scree' slope, where rocks have fallen down and accumulated on the side of a mountain.)
+
+![](p5.png){width="394"}
+
+#### Step 5: Recast the data alone the Principal Component axes.
+
+In the previous steps, apart from standardization, you do not make any changes on the data, you just select the principal components and form the feature vector, but the input data set remains always in terms of the original axes (i.e, in terms of the initial variables).
+
+In this step, which is the last one, the aim is to use the feature vector formed using the eigenvectors of the covariance matrix, to reorient the data from the original axes to the ones represented by the principal components (hence the name Principal Components Analysis). This can be done by multiplying the transpose of the original data set by the transpose of the feature vector.
+
+$$
+\text { FinalDataSet }=\text { FeatureVector }{ }^T * \text { StandardizedOriginalDataSet }^T
+$$
+
+#### Example: US Arrests Data set
+
+For this example we will use US Arrests data set.
+
+For each of the fifty states in the United States, the data set contains the number of arrests per 100, 000 residents for each of three crimes: Assault, Murder, and Rape. We also record UrbanPop (the percent of the population in each state living in urban areas).
+
+```{r}
+library(ISLR)
+library(tidyverse)
+library(psych)
+
+data("USArrests")
+```
+
+Scatter plot matrix for the original data set.
+
+```{r}
+pairs.panels(USArrests)
+```
+
+First extract the row names and save it as 'states'
+
+```{r}
+states=row.names(USArrests)
+```
+
+Now examine the variable summaries.
+
+```{r}
+apply(USArrests, 2, mean)
+apply(USArrests, 2, var)
+apply(USArrests, 2, sd)
+```
+
+The variables have vastly different mean and variance. If we do not scale the variables, most of the variation in the PC will be driven by Assault variable, as it has the largest mean and variance.
+
+Calculate the principal components
+
+```{r}
+pr.out=prcomp(USArrests, scale=TRUE)
+names(pr.out)
+```
+
+```{r}
+#center: sample mean for the original variable
+pr.out$center
+
+#scale : standard deviation of the original variable
+pr.out$scale
+
+#rotation: the contribution of each variable to each principal component
+pr.out$rotation
+
+#sdev: standard deviation of each principal components
+pr.out$sdev
+
+#x : value of the PCA for every sample points
+dim(pr.out$x)
+head(pr.out$x,n = 10)
+```
+
+Scatter plot matrix for the PC's
+
+```{r}
+pairs.panels(pr.out$x)
+```
+
+Plot the first two principal components
+
+```{r eval=FALSE}
+pr.out$rotation=-pr.out$rotation
+pr.out$x=-pr.out$x
+biplot(pr.out, scale=0)
+```
+
+![](p21.png){width="506"}
+
+This figure is known as a biplot, because it displays both the principal component scores and the principal component loadings.
+
+The blue state names represent the scores for the first two principal components.
+
+The orange arrows indicate the first two principal component loading vectors (with axes on the top and right).
+
+For example, the loading for Rape on the first component is 0.54, and its loading on the second principal component 0.17 [the word Rape is centered at the point (0.54, 0.17)].
+
+#### Scaling of the variables matters
+
+If the variables are in different units, scaling each to have standard deviation equal to one is recommended.
+
+If they are in the same units, you might or might not scale the variables.
+
+![](p22.png){width="586"}
+
+Calculating variance per each PC
+
+```{r}
+pr.out$sdev  #sd of each PC
+(pr.var=pr.out$sdev^2) #variance of each PC
+```
+
+```{r}
+pve=pr.var/sum(pr.var)
+pve
+```
+
+Scree plot
+
+```{r}
+par(mfrow =c(1,2))
+plot(pve, xlab="Principal Component", 
+     ylab="Proportion of Variance Explained", ylim=c(0,1),type='b')
+
+plot(cumsum(pve), xlab="Principal Component",
+     ylab="Cumulative Proportion of Variance Explained", 
+     ylim=c(0,1),type='b')
+```
+
+## Advantages of PCA
+
+-   Lack of redundancy of data given the orthogonal components.
+
+-   Principal components are independent of each other, so removes correlated features.
+
+-   PCA improves the performance of the ML algorithm as it eliminates correlated variables that don't contribute in any decision making.
+
+-   PCA helps in overcoming data overfitting issues by decreasing the number of features.
+
+-   PCA results in high variance and thus improves visualization.
+
+-   Reduction of noise since the maximum variation basis is chosen and so the small variations in the background are ignored automatically.
+
+## Disadvantages of PCA
+
+-   It is difficult to evaluate the covariance in a proper way.
+
+-   Even the simplest invariance could not be captured by the PCA unless the training data explicitly provide this information.
+
+-   Data needs to be standardized before implementing PCA else it becomes difficult to identify optimal principal components.
+
+-   Though PCA covers maximum variance amid data features, sometimes it may skip a bit of information in comparison to the actual list of features.
+
+-   Implementing PCA over datasets leads to transforming actual features in principal components that are linear combinations of actual features, therefore principle components are difficult to read or interpret as compared to actual features.
+
+-   In the presence of Qualitative data (categorical data), Ordinary PCA can not be directly applied.
+
+## When to Use PCA?
+
+-   **Case 1:** When you want to lower down the number of variables, but you are unable to identify which variable you don't want to keep in consideration.
+
+-   **Case 2:** When you want to check if the variables are independent of each other.
+
+-   **Case 3:** When you are ready to make independent features less interpretable.
+
+Please use the following links to see interesting analysis on PCA:
+
+-   [link1](https://www.sciencedirect.com/topics/agricultural-and-biological-sciences/principal-component-analysis)
+
+-   [link2](https://people.duke.edu/~hpgavin/SystemID/References/Richardson-PCA-2009.pdf): Image Compression Using PCA.
+
+#### Example: Wine Data set.
+
+For this example we use a 'Wine data set' from UCI machine learning repository. You can find the variable description [here](https://archive.ics.uci.edu/ml/datasets/wine).
+
+```{r}
+wine <- read.table(
+  "http://archive.ics.uci.edu/ml/machine-learning-databases/wine/wine.data", 
+  sep=",")
+
+colnames(wine) <- c("Cvs","Alcohol","Malic acid","Ash","Alcalinity of ash", 
+                    "Magnesium", "Total phenols", "Flavanoids", 
+                    "Nonflavanoid phenols", "Proanthocyanins", 
+                    "Color intensity", "Hue", 
+                    "OD280/OD315 of diluted wines", "Proline")
+
+
+str(wine)
+```
+
+The first column corresponds to the classes
+
+```{r fig.height=7}
+wineClasses <- factor(wine$Cvs)
+
+# Use pairs
+pairs(wine[,-1], col = wineClasses, upper.panel = NULL, pch = 16, cex = 0.5)
+legend("topright", bty = "n", legend = c("Cv1","Cv2","Cv3"), pch = 16, col = c("black","red","green"),xpd = T, cex = 2, y.intersp = 0.5)
+```
+
+Apply PCA
+
+```{r}
+# remove the response variable
+winePCA <- prcomp(wine[,-1],center=TRUE,scale=TRUE)
+summary(winePCA)
+```
+
+Visualizing PCA
+
+```{r}
+plot(winePCA$x[,1:2], col = wineClasses)
+```
+
+Biplot
+
+```{r}
+biplot(winePCA)
+```
+
+If you need to construct better visualizations you can use the following codes:
+
+```{r}
+library(devtools)
+
+if(!require(ggbiplot)){
+    install_github("vqv/ggbiplot")
+    library(ggbiplot)
+}
+```
+
+PC1 Vs PC2
+
+```{r}
+ggbiplot(winePCA,ellipse=TRUE,  groups=wineClasses)
+```
+
+PC3 Vs PC4
+
+```{r}
+ggbiplot(winePCA,choices=c(3,4),ellipse=TRUE,  groups=wineClasses)
+```
+
+Here the first plot give us a better separation between the classes.
+
+Next let's compute standard deviation of each principal component.
+
+```{r}
+std_dev <- winePCA$sdev
+
+#compute proportion of variance
+pr_var <- std_dev^2
+pve <- pr_var/sum(pr_var)
+```
+
+Scree plot
+
+```{r}
+library(gridExtra)
+x = 1:length(pve)
+g1 =qplot(x,pve, xlab="Principal Component",
+      ylab="Proportion of Variance Explained") +
+  geom_line()+geom_point(shape=21,fill="red",cex=3)
+
+g2 =qplot(x,cumsum(pve), xlab="Principal Component",
+      ylab="Cumulative Proportion of Variance Explained",
+      main="  ",ylim=c(0,1))+
+  geom_line()+geom_point(shape=21,fill="red",cex=3)
+
+grid.arrange(g1,g2, nrow=1)
+```
+
+#### Example: The first Principal Component of Heptathlon scores
+
+This is a unique example of PCA.
+
+A heptathlon example is adapted from "A Handbook of Statistical Analysis Using R" by Everitt and Hothorn.
+
+The data set represents scores of athletes of a heptathlon.Use the `heptathlon.csv` file.
+
+```{r}
+heptathlon = read.csv(file="heptathlon.csv",row.names=1)
+str(heptathlon)
+```
+
+The values for hurdles, run200m and run800m are in seconds. The values are highjump, shot, long jump and javelin are meters.
+
+Let's remove the official score form the data set.
+
+```{r}
+hepDat = heptathlon[,-ncol(heptathlon)]
+```
+
+```{r}
+pairs.panels(hepDat)
+```
+
+Note the outlier along the top of both the top and bottom row. One athlete has a long hurdle time, a low high jump, a short long jump, a pretty long 200 meter run time and long time for the 800 meter run as compared to the other Olympic athletes.
+
+##### Transforming data before input to principal components
+
+A good way to simplify interpretation is make all the positive outcomes have larger values. Hence the following script transforms the timed outcomes so the fastest times (currently smallest values) become largest values.
+
+The transformation below subtracts the person's time from the longest time. The person with the shorted time will have the largest value. In words the value is the seconds ahead of the last person.
+
+```{r}
+hepDat$hurdles=max(hepDat$hurdles)-hepDat$hurdles
+hepDat$run200m=max(hepDat$run200m)-hepDat$run200m
+hepDat$run800m=max(hepDat$run800m)-hepDat$run800m
+```
+
+##### Obtaining principal components
+
+When the variables are assessed in different units of measure standard practice is to use the correlation matrix in obtaining principle components. Below this mean set the `prcomp()` scale argument to `TRUE` which after subtracting the means divides the variables by their standard deviations
+
+```{r}
+heptPca = prcomp(hepDat,scale=TRUE) 
+summary(heptPca)
+```
+
+```{r}
+round(heptPca$rotation,2)
+```
+
+Look at the rotation columns. A graphic representation could help show the patterns. In the first column the magnitude are roughly the same except the small value for javelin. In the second column the javelin value, -.84, sticks out as having a largest magnitude. Throwing the javelin has physical requirements that are less compatible with the training for other events.
+
+Variation explained.
+
+```{r}
+heptVar = heptPca$sdev**2
+100*cumsum(heptVar)/sum(heptVar)
+```
+
+The first principal component accounts for about 64% of the variation.
+
+Relate the first principal component to the judges score:
+
+```{r}
+plot(heptathlon$score,-heptPca$x[,1],las=1,pch=21,bg="red",
+     xlab="Official Score",ylab="First Principal Component",
+     main="Comparing Scores and First Principal Component")
+correl = cor(-heptPca$x[,1],heptathlon$score)
+xloc = mean(par()$usr[1:2])
+text(xloc,4,paste("Correlation =",round(correl,2)),adj=.5,cex=1.1)
+```
+
+The first PC and the score are correlated with a coefficient of 0.99.
+
+A simple linear regression model with PC1
+
+```{r}
+data = data.frame(heptathlon$score,heptPca$x[,1])
+
+fit = lm(data$heptathlon.score~data$heptPca.x...1., data= data)
+summary(fit)
+
+```
+
+#### Example: Image Compression using PCA
+
+This example is taken out from this [article](https://rpubs.com/syabaruddin/Image_Compression_Using_PCA).
+
+One of the use cases of PCA is that it can be used for [*image compression*]{.underline} --- a technique that minimizes the size in bytes of an image while keeping as much of the quality of the image as possible.
+
+For this example we will use a picture of 'Sumba Island'.
+
+![Sumba Island](sumba.jpeg){width="533"}
+
+```{r}
+library(tidyverse)
+library(jpeg)
+library(factoextra)
+library(knitr)
+library(gridExtra)
+```
+
+Now let's load the image:
+
+```{r}
+image <- readJPEG("sumba.jpeg")
+class(image)
+dim(image)
+```
+
+The image is represented as three 2000x3000 matrices as an array with each matrix corresponding to the RGB color value scheme.
+
+Before using PCA we will breakdown the the each color into three different data sets
+
+```{r}
+# RGB color matrices
+rimage <- image[,,1] #red
+gimage <- image[,,2] #green
+bimage <- image[,,3] #blue
+```
+
+Let's use PCA separately for each color data set.
+
+```{r}
+# PCA for each color scheme
+pcar <- prcomp(rimage, center=FALSE)
+pcag <- prcomp(gimage, center=FALSE)
+pcab <- prcomp(bimage, center=FALSE)
+
+# PCA objects into a list
+pcaimage <- list(pcar, pcag, pcab)
+```
+
+Constructing Scree plots
+
+```{r fig.height=12}
+# Data frame for easier plotting
+df_image <- data.frame(scheme=rep(c("R", "G", "B"), each=nrow(image)), 
+                 index=rep(1:nrow(image), 3),
+                 var=c(pcar$sdev^2,
+                       pcag$sdev^2,
+                       pcab$sdev^2))
+
+# Scree plot 
+p1 = df_image %>% 
+  group_by(scheme) %>%
+  mutate(propvar=100*var/sum(var)) %>%
+  ungroup() %>%
+  ggplot(aes(x=index, y=propvar, fill=scheme)) + 
+  geom_bar(stat="identity") +
+  labs(title="Scree Plot", x="Principal Component", 
+       y="% of Variance") + 
+  scale_x_continuous(limits=c(0, 20)) +
+  scale_fill_viridis_d() +
+  facet_wrap(~scheme) +
+  theme_bw() +
+  theme(legend.title=element_blank(),
+        legend.position="bottom") 
+
+# Cumulative variation plot
+p2 =df_image %>% 
+  group_by(scheme) %>%
+  mutate(propvar=100*var/sum(var)) %>%
+  mutate(cumsum=cumsum(propvar)) %>%
+  ungroup() %>%
+  ggplot(aes(x=index, y=cumsum, fill=scheme)) + 
+  geom_bar(stat="identity") + 
+  labs(title="Cumulative Proportion of Variance Explained", 
+       x="Principal Component", y="Cumulative % of Variance") + 
+  scale_x_continuous(limits=c(0, 20)) +
+  scale_fill_viridis_d() +
+  facet_wrap(~scheme) +
+  theme_bw() +
+  theme(legend.title=element_blank(),
+        legend.position="bottom")
+
+grid.arrange(p1,p2,nrow=2)
+```
+
+According to the Scree plot above, With only the first principal component we can explain more than 70% of the total variance. Maybe the visualization is better if we plot the cumulative variation. Let's check it out!
+
+##### Image Reconstruction
+
+In the following code we reconstruct the 7 times: using 5, 50, 500, 800, 1200 and 1600 principal components. As more principal components are used, the more the variance (information) is described. The first few principal components will have the most drastic change in quality while the last few components will not make much if any, difference to quality.
+
+```{r eval=FALSE}
+pcnum <- c(5,50,500,800,1200,1600)
+
+# Reconstruct the image four times
+for(i in pcnum){
+    pca.img <- sapply(pcaimage, function(j){
+      compressed.img <- j$x[, 1:i] %*% t(j$rotation[, 1:i])
+    }, simplify='array') 
+  writeJPEG(pca.img, paste("Image reconstruction with", 
+            round(i, 0), "principal components.jpg"))
+}
+```
+
+![Image reconstruction with 5 principal components](im5.jpg){width="553"}
+
+![Image reconstruction with 50 principal components](im50.jpg){width="553"}
+
+![Image reconstruction with 500 principal components](im500.jpg){width="553"}
+
+![Image reconstruction with 800 principal components](im800.jpg){width="553"}
+
+![Image reconstruction with 1200 principal components](im1200.jpg){width="553"}
+
+![Image reconstruction with 1600 principal components](im1600.jpg){width="553"}
+
+Image compression with principal component analysis reduced the original image by 40% with little to no loss in image quality. Although there are more sophisticated algorithms for image compression, PCA can still provide good compression ratios for the cost of implementation.
+
+# Clustering
+
+Clustering refers to a very broad set of techniques for finding subgroups, or clusters, in a data set. When we cluster the observations of a data set, we seek to partition them into distinct groups so that the observations within each group are quite similar to each other, while observations in different groups are quite different from each other. Of course, to make this concrete, we must define what it means for two or more observations to be similar or different. Indeed, this is often a domain-specific consideration that must be made based on knowledge of the data being studied.
+
+For instance, suppose that we have a set of n observations, each with p features. The n observations could correspond to tissue samples for patients with breast cancer, and the p features could correspond to measurements collected for each tissue sample; these could be clinical measurements, such as tumor stage or grade, or they could be gene expression measurements. We may have a reason to believe that there is some heterogeneity among the n tissue samples; for instance, perhaps there are a few different unknown subtypes of breast cancer.
+
+Clustering could be used to find these subgroups. This is an unsupervised problem because we are trying to discover structure-in this case, distinct clusters-on the basis of a data set. The goal in supervised problems, on the other hand, is to try to predict some outcome vector such as survival time or response to drug treatment.
+
+Another application of clustering arises in marketing. We may have access to a large number of measurements (e.g. median household income, occupation, distance from nearest urban area, and so forth) for a large number of people. Our goal is to perform market segmentation by identifying subgroups of people who might be more receptive to a particular form of advertising, or more likely to purchase a particular product. The task of performing market segmentation amounts to clustering the people in the data set.
+
+Since clustering is popular in many fields, there exist a great number of clustering methods. In this section we focus on perhaps the two best-known clustering approaches: ***K-means clustering*** and ***Hierarchical clustering***.
+
+# K-Means Clustering
+
+K-means clustering is a simple and elegant approach for partitioning a data set into K distinct, non-overlapping clusters. To perform K-means clustering, we must first specify the desired number of clusters K; then the K-means algorithm will assign each observation to exactly one of the K clusters.
+
+The $K$-means clustering procedure results from a simple and intuitive mathematical problem. We begin by defining some notation. Let $C_1, \ldots, C_K$ denote sets containing the indices of the observations in each cluster. These sets satisfy two properties: 1. $C_1 \cup C_2 \cup \ldots \cup C_K=\{1, \ldots, n\}$. In other words, each observation belongs to at least one of the $K$ clusters. 2. $C_k \cap C_{k^{\prime}}=\emptyset$ for all $k \neq k^{\prime}$. In other words, the clusters are non-overlapping: no observation belongs to more than one cluster.
+
+![simulated data set with 150 observations in two-dimensional space. Panels show the results of applying K-means clustering with different values of K, the number of clusters. The color of each observation indicates the cluster to which it was assigned using the K-means clustering algorithm. **Note** that there is no ordering of the clusters, so the cluster coloring is arbitrary. These cluster labels were not used in clustering; instead, they are the outputs of the clustering procedure.](p6.png)
+
+For instance, if the $i$ th observation is in the $k$ th cluster, then $i \in C_k$. The idea behind $K$-means clustering is that a *good* clustering is one for which the [*within-cluster variation*]{.underline} is as small as possible. The within-cluster variation for cluster $C_k$ is a measure $W\left(C_k\right)$ of the amount by which the observations within a cluster differ from each other. Hence we want to solve the problem $$
+\underset{C_1, \ldots, C_K}{\operatorname{minimize}}\left\{\sum_{k=1}^K W\left(C_k\right)\right\}
+$$ In words, this formula says that we want to partition the observations into K clusters such that the total within-cluster variation, summed over all K clusters, is as small as possible.
+
+Solving the above seems like a reasonable idea, but in order to make it actionable we need to define the within-cluster variation. There are many possible ways to define this concept, but by far the most common choice involves squared Euclidean distance. That is, we define $$
+W\left(C_k\right)=\frac{1}{\left|C_k\right|} \sum_{i, i^{\prime} \in C_k} \sum_{j=1}^p\left(x_{i j}-x_{i^{\prime} j}\right)^2
+$$ where $\left|C_k\right|$ denotes the number of observations in the $k$ th cluster. In other words, the within-cluster variation for the $k$ th cluster is the sum of all of the pairwise squared Euclidean distances between the observations in the $k$ th cluster, divided by the total number of observations in the $k$ th cluster. Combining both equations above gives the optimization problem that defines $K$-means clustering, $$
+\underset{C_1, \ldots, C_K}{\operatorname{minimize}}\left\{\sum_{k=1}^K \frac{1}{\left|C_k\right|} \sum_{i, i^{\prime} \in C_k} \sum_{j=1}^p\left(x_{i j}-x_{i^{\prime} j}\right)^2\right\} .
+$$ To solve the above formula is not a easy task as there are almost $K^n$ ways to partition n observations in to K clusters. This is a huge number.
+
+To overcome this problem, we would like to find an algorithm as follows.
+
+## Algorithm K-Means Clustering
+
+1.  Randomly assign a number, from 1 to $K$, to each of the observations. These serve as initial cluster assignments for the observations.
+
+2.  Iterate until the cluster assignments stop changing:
+
+    a). For each of the $K$ clusters, compute the cluster centroid. The $k$ th cluster centroid is the vector of the $p$ feature means for the observations in the $k$ th cluster.
+
+    b). Assign each observation to the cluster whose centroid is closest (where closest is defined using Euclidean distance).
+
+![The progress of the K-means algorithm of a example with K=3. **Top left:** the observations are shown. **Top center:** in Step 1 of the algorithm, each observation is randomly assigned to a cluster. **Top right:** in Step 2(a), the cluster centroids are computed. These are shown as large colored disks. Initially the centroids are almost completely overlapping because the initial cluster assignments were chosen at random. **Bottom left:** in Step 2(b), each observation is assigned to the nearest centroid. **Bottom center:** Step 2(a) is once again performed, leading to new cluster centroids. **Bottom right:** the results obtained after ten iterations.](p7.png)
+
+Because the $K$-means algorithm finds a local rather than a global optimum, the results obtained will depend on the initial (random) cluster assignment of each observation in Step 1 of the algorithm. For this reason, it is important to run the algorithm multiple times from different random initial configurations.
+
+Then one selects the best solution, i.e. that for which the objective is smallest.
+
+![K-means clustering performed six times on the data from above with K = 3, each time with a different random assignment of the observations in Step 1 of the K-means algorithm. Three different local optima were obtained, one of which resulted in a smaller value of the objective and provides better separation between the clusters. Those labeled in red all achieved the same best solution, with an objective value of 235.8.](p8.png)
+
+Figure shows the local optima obtained by running $K$-means clustering six times using six different initial cluster assignments, using the toy data from Figure 10.5. In this case, the best clustering is the one with an objective value of 235.8.
+
+#### Example: Simulated Data
+
+Here we will use a Simulated data set to see how K-means clustering works
+
+```{r}
+set.seed(2)
+
+#simulated data set
+x=matrix(rnorm(50*2), ncol=2)
+plot(x)
+```
+
+```{r}
+# creating two actual clusters by shifting the mean
+x[1:25,1]=x[1:25,1]+3
+x[1:25,2]=x[1:25,2]-4
+
+plot(x)
+```
+
+When K=2;
+
+```{r}
+km.out=kmeans(x,2,nstart=20) 
+km.out
+```
+
+By setting `nstart=20`, k-means are performed with 25 different initial assignment and report the best result.
+
+```{r}
+names(km.out)
+```
+
+cluster: A vector of integers (from 1:k) indicating the cluster to which each point is allocated. centers: A matrix of cluster centers. totss: The total sum of squares. withinss: Vector of within-cluster sum of squares, one component per cluster. tot.withinss: Total within-cluster sum of squares, i.e. sum(withinss). betweenss: The between-cluster sum of squares, i.e. totss - tot.withinss. size: The number of points in each cluster.
+
+```{r}
+plot(x, col=(km.out$cluster+1), main="K-Means Clustering Results with K=2", 
+     xlab="", ylab="", pch=20, cex=2)
+```
+
+When K=3;
+
+```{r}
+set.seed(4)
+km.out=kmeans(x,3,nstart=20)
+km.out
+plot(x, col=(km.out$cluster+1), main="K-Means Clustering Results with K=3",
+     xlab="", ylab="", pch=20, cex=2)
+```
+
+changing the nstart;
+
+```{r}
+set.seed(764)
+km.out=kmeans(x,3,nstart=1)
+km.out$tot.withinss
+
+# total with-in cluster sum of squares. We need to minimize this
+km.out=kmeans(x,3,nstart=25)
+km.out$tot.withinss
+```
+
+#### Example: US Arrests Data set: Cts...
+
+We will use the same USArrests data set here.
+
+First, let's scale the data set.
+
+```{r}
+library(cluster)
+library(factoextra)
+```
+
+```{r}
+datas <- scale(na.omit(USArrests))
+```
+
+##### Calculate the distance
+
+`method="euclidean"` (default) calculates the euclidean distance `method="pearson"` calculates correlation based distance
+
+```{r}
+res.dist <- get_dist(USArrests, stand = TRUE, method = "euclidean")
+fviz_dist(res.dist, 
+         gradient = list(low = "#00AFBB", mid = "white", high = "#FC4E07"))
+```
+
+```{r}
+res.dist <- get_dist(USArrests, stand = TRUE, method = "pearson")
+fviz_dist(res.dist, 
+         gradient = list(low = "#00AFBB", mid = "white", high = "#FC4E07"))
+```
+
+K-means with k=2:
+
+```{r}
+k2 <- kmeans(datas, centers = 2, nstart = 25)
+k2
+```
+
+```{r}
+plot(USArrests$Rape~USArrests$Murder, col=(k2$cluster+1), 
+     main="K-Means Clustering Results with K=2", 
+     xlab="", ylab="", pch=20, cex=2)
+```
+
+Visualize clusters, using PCA:
+
+```{r}
+fviz_cluster(k2, data = datas)
+```
+
+If there are more than two dimensions (variables) `fviz_cluster` will perform principal component analysis and plot the data points according to the first two principal components that explain the majority of the variance.
+
+##### Plot with the original variables
+
+Here we have to pick only two variables for the X and Y axis. Depending on the variables you might not be able to see the clusters separately.
+
+```{r}
+datas %>%
+  as_tibble() %>%
+  mutate(cluster = k2$cluster,
+         state = row.names(USArrests)) %>%
+  ggplot(aes(UrbanPop, Murder, color = factor(cluster), label = state)) +
+  geom_text()
+```
+
+Now let's use different K values and see how the clusters are forming.
+
+```{r}
+k3 <- kmeans(datas, centers = 3, nstart = 25)
+k4 <- kmeans(datas, centers = 4, nstart = 25)
+k5 <- kmeans(datas, centers = 5, nstart = 25)
+```
+
+```{r}
+p1 <- fviz_cluster(k2, geom = "point", data = datas) + ggtitle("k = 2")
+p2 <- fviz_cluster(k3, geom = "point",  data = datas) + ggtitle("k = 3")
+p3 <- fviz_cluster(k4, geom = "point",  data = datas) + ggtitle("k = 4")
+p4 <- fviz_cluster(k5, geom = "point",  data = datas) + ggtitle("k = 5")
+
+grid.arrange(p1, p2, p3, p4, nrow = 2)
+```
+
+Now let's try to see how can we figure out the best K values according to "within-cluster sum of squares"
+
+```{r}
+set.seed(123)
+
+# function to compute total within-cluster sum of square 
+wss <- function(k) {
+  kmeans(datas, k, nstart = 10 )$tot.withinss
+}
+```
+
+```{r}
+# Compute and plot wss for k = 1 to k = 15
+k.values <- 1:15
+
+# extract wss for 2-15 clusters
+wss_values <- map_dbl(k.values, wss)
+
+plot(k.values, wss_values,
+     type="b", pch = 19, frame = FALSE, 
+     xlab="Number of clusters K",
+     ylab="Total within-clusters sum of squares")
+```
+
+One way to determine k is to choose the k where you see a bend.
+
+# Hierarchical Clustering
+
+One potential disadvantage of K-means clustering is that it requires us to pre-specify the number of clusters K.
+
+Hierarchical clustering is an alternative approach which does not require that we commit to a particular choice of K. Hierarchical clustering has an added advantage over K-means clustering in that it results in an attractive tree-based representation of the observations, called a *dendrogram*.
+
+In this section, we describe *bottom-up* or *agglomerative* clustering. This is the most common type of hierarchical clustering, and refers to the fact that a dendrogram (generally depicted as an upside-down tree) is built starting from the leaves and combining clusters up to the trunk.
+
+#### Euclidean Distance
+
+![](p17.png){width="419"}
+
+#### Hierarchical Clustering: The Idea
+
+Consider the following 5 data points.
+
+![](p9.png){width="300"}
+
+Let's try to find the closest two points:
+
+![](p10.png){width="300"}
+
+Then find the next closet two points:
+
+![](p11.png){width="300"}
+
+Then the next closet points:
+
+![](p12.png){width="300"}
+
+Until you have a single cluster:
+
+![](p13.png){width="300"}
+
+The approach in words:
+
+-   Start with each point in its own cluster.
+
+-   Identify the closest two clusters and merge them.
+
+-   Repeat.
+
+-   Ends when all points are in a single cluster.
+
+![](p14.png){width="477"}
+
+### Algorithm: Hierarchichal Clustering
+
+1.  Begin with $n$ observations and a measure (such as Euclidean distance) of all the $\left(\begin{array}{l}n \\ 2\end{array}\right)=n(n-1) / 2$ pairwise dissimilarities. Treat each observation as its own cluster.
+
+2.  For $i=n, n-1, \ldots, 2$ :
+
+    a). Examine all pairwise inter-cluster dissimilarities among the $i$ clusters and identify the pair of clusters that are least dissimilar (that is, most similar). Fuse these two clusters. The dissimilarity between these two clusters indicates the height in the dendrogram at which the fusion should be placed.
+
+    b). Compute the new pairwise inter-cluster dissimilarities among the $i-1$ remaining clusters.
+
+#### Example:
+
+45 observations generated in 2-dimensional space. In reality there are three distinct classes, shown in separate colors. However, we will treat these class labels as unknown and will seek to cluster the observations in order to discover the classes from the data.
+
+![](p15.png){width="353"}
+
+After running the above algorithm we archive the following dendogram.
+
+![**Left:** dendrogram obtained from hierarchically clustering for the data with complete linkage and Euclidean distance. **Center:** the dendrogram from the left-hand panel, cut at a height of nine (indicated by the dashed line). This cut results in two distinct clusters, shown in different colors. **Right:** the dendrogram from the left-hand panel, now cut at a height of five. This cut results in three distinct clusters, shown in different colors. Note that the colors were not used in clustering, but are simply used for display purposes in this figure.](p16.png){width="679"}
+
+## Choice of Dissimilarity Measure
+
+The algorithm seems simple enough, but one issue has not been addressed.
+
+How did we determine that a one cluster should be fused with another cluster? We have a concept of the dissimilarity between pairs of observations, but how do we define the dissimilarity between two clusters if one or both of the clusters contains multiple observations?
+
+The concept of dissimilarity between a pair of observations needs to be extended to a pair of groups of observations. This extension is achieved by developing the notion of linkage, which defines the dissimilarity between two groups of observations.
+
+The four most common types of linkage are briefly described below.
+
+```{=tex}
+\begin{array}{|c|l|}
+\hline \text { Linkage } & {\text { Description }} \\
+\hline \text { Complete } & \begin{array}{l}
+\text { Maximal intercluster dissimilarity. Compute all pairwise dis- } \\
+\text { similarities between the observations in cluster A and the } \\
+\text { observations in cluster B, and record the largest of these } \\
+\text { dissimilarities. }
+\end{array} \\
+\hline \text { Single } & \begin{array}{l}
+\text { Minimal intercluster dissimilarity. Compute all pairwise dis- } \\
+\text { similarities between the observations in cluster A and the } \\
+\text { observations in cluster B, and record the smallest of these } \\
+\text { dissimilarities. Single linkage can result in extended, trailing } \\
+\text { clusters in which single observations are fused one-at-a-time. }
+\end{array} \\
+\hline \text { Average } & \begin{array}{l}
+\text { Mean intercluster dissimilarity. Compute all pairwise dis- } \\
+\text { similarities between the observations in cluster A and the } \\
+\text { observations in cluster B, and record the average of these } \\
+\text { dissimilarities. }
+\end{array} \\
+\hline \text { Centroid } & \begin{array}{l}
+\text { Dissimilarity between the centroid for cluster A (a mean } \\
+\text { vector of length p) and the centroid for cluster B. Centroid } \\
+\text { linkage can result in undesirable inversions. }
+\end{array} \\
+\hline
+\end{array}
+```
+Average, complete, and single linkage are most popular among statisticians. Average and complete linkage are generally preferred over single linkage, as they tend to yield more balanced dendrograms. Centroid linkage is often used in genomics, but suffers from a major drawback in that an inversion can occur, whereby two clusters are fused at a height below either of the individual clusters in the dendrogram.
+
+The dissimilarities computed in Step 2(b) of the hierarchical clustering algorithm will depend on the type of linkage used, as well as on the choice of dissimilarity measure. Hence, the resulting dendrogram typically depends quite strongly on the type of linkage used, as is shown in the figure below.
+
+![Average, complete, and single linkage applied to an example data set. Average and complete linkage tend to yield more balanced clusters.](p18.png){width="679"}
+
+#### Another choice of Dissimilarity Measure
+
+Thus far, we have have used Euclidean distance as the dissimilarity measure. But sometimes other dissimilarity measures might be preferred. For example, [*correlation-based distance*]{.underline} considers two observations to be similar if their features are highly correlated, even though the observed values may be far apart in terms of Euclidean distance.
+
+This is an unusual use of correlation, which is normally computed between variables; here it is computed between the observation profiles for each pair of observations.
+
+![Three observations with measurements on 20 variables are shown. Observations 1 and 3 have similar values for each variable and so there is a small Euclidean distance between them. But they are very weakly correlated, so they have a large correlation-based distance. On the other hand, observations 1 and 2 have quite different values for each variable, and so there is a large Euclidean distance between them. But they are highly correlated, so there is a small correlation-based distance between them.](p19.png){width="404"}
+
+Above figure illustrates the difference between Euclidean and correlation-based distance. Correlation-based distance focuses on the shapes of observation profiles rather than their magnitudes.
+
+The choice of dissimilarity measure is very important, as it has a strong effect on the resulting dendrogram. In general, careful attention should be paid to the type of data being clustered and the scientific question at hand. These considerations should determine what type of dissimilarity measure is used for hierarchical clustering.
+
+In addition to carefully selecting the dissimilarity measure used, one must also consider whether or not the variables should be scaled to have standard deviation one before the dissimilarity between the observations is computed.
+
+To illustrate this point, Let's use a online shopping example. Some items may be purchased more frequently than others; for instance, a shopper might buy ten pairs of socks a year, but a computer very rarely.
+
+High-frequency purchases like socks therefore tend to have a much larger effect on the inter-shopper dissimilarities, and hence on the clustering ultimately obtained, than rare purchases like computers. This may not be desirable. If the variables are scaled to have standard deviation one before the inter-observation dissimilarities are computed, then each variable will in effect be given equal importance in the hierarchical clustering performed.
+
+We might also want to scale the variables to have standard deviation one if they are measured on different scales; otherwise, the choice of units (e.g. centimeters versus kilometers) for a particular variable will greatly affect the dissimilarity measure obtained. It should come as no surprise that whether or not it is a good decision to scale the variables before computing the dissimilarity measure depends on the application at hand.
+
+![An eclectic online retailer sells two items: socks and computers. **Left:** the number of pairs of socks, and computers, purchased by eight online sho pers is displayed. Each shopper is shown in a different color. If inter-observation dissimilarities are computed using Euclidean distance on the raw variables, then the number of socks purchased by an individual will drive the dissimilarities obtained, and the number of computers purchased will have little effect. This might be undesirable, since (1) computers are more expensive than socks and so the online retailer may be more interested in encouraging shoppers to buy computers than socks, and (2) a large difference in the number of socks purchased by two shoppers may be less informative about the shoppers' overall shopping preferences than a small difference in the number of computers purchased. **Center:** the same data is shown, after scaling each variable by its standard deviation. Now the number of computers purchased will have a much greater effect on the inter-observation dissimilarities obtained. **Right:** the same data are displayed, but now the y-axis represents the number of dollars spent by each online shopper on socks and on computers. Since computers are much more expensive than socks, now computer purchase history will drive the inter-observation dissimilarities obtained.](p20.png){width="613"}
+
+We note that the issue of whether or not to scale the variables before performing clustering applies to K-means clustering as well.
+
+#### Example: Simulated Data: Cts...
+
+Here will use the previously used simulated data set.
+
+`dist()` is used to calculate the Euclidean distance.
+
+```{r}
+dim(dist(x)) 
+```
+
+Here let's use three different linkage methods:
+
+```{r}
+hc.complete=hclust(dist(x), method="complete")
+hc.average=hclust(dist(x), method="average")
+hc.single=hclust(dist(x), method="single")
+```
+
+Plotting the dendograms
+
+```{r}
+par(mfrow=c(1,3))
+plot(hc.complete,main="Complete Linkage", xlab="", sub="", cex=.9)
+plot(hc.average, main="Average Linkage", xlab="", sub="", cex=.9)
+plot(hc.single, main="Single Linkage", xlab="", sub="", cex=.9)
+```
+
+Let's cut the dendograms to get two different clusters.
+
+```{r}
+cutree(hc.complete, 2)
+cutree(hc.average, 2)
+cutree(hc.single, 2)
+```
+
+Let's see how many observations are in each clusters for each method.
+
+```{r}
+table(cutree(hc.complete, 2))
+table(cutree(hc.average, 2))
+table(cutree(hc.single, 2))
+```
+
+Here you can see that 'Single Linkage' perform poorly compared to the other methods.
+
+## Practical Issues in Clustering
+
+In order to perform clustering, some decisions must be made.
+
+-   Should the observations or features first be standardized in some way? For instance, maybe the variables should be centered to have mean zero and scaled to have standard deviation one.
+
+-   In the case of hierarchical clustering, What dissimilarity measure should be used?
+
+    -   What type of linkage should be used?
+
+    -   Where should we cut the dendrogram in order to obtain clusters?
+
+    -   
+
+-   In the case of K-means clustering, how many clusters should we look for in the data?
+
+Each of these decisions can have a strong impact on the results obtained. In practice, we try several different choices, and look for the one with the most useful or interpretable solution. With these methods, there is no single right answer---any solution that exposes some interesting aspects of the data should be considered.
+
+#### Example: US Arrests Data set: Cts...
+
+Here we will use the USArrests data set.
+
+Dissimilarity matrix:
+
+```{r}
+d <- dist(datas, method = "euclidean")
+```
+
+Here let's use three different linkage methods:
+
+```{r}
+hc1 <- hclust(d, method = "complete" )
+hc2 <-hclust(d, method = "average")
+hc3 <-hclust(d, method = "single")
+```
+
+```{r}
+par(mfrow=c(1,3))
+plot(hc1, main="Complete Linkage", cex = 0.6, hang = -1)
+plot(hc2, main="Average Linkage", cex = 0.6, hang = -1)
+plot(hc3, main="Single Linkage", cex = 0.6, hang = -1)
+```
+
+Cut the dendogram tree in 4 groups:
+
+```{r}
+grp <- cutree(hc1, k = 4)
+table(grp)
+```
+
+Visualize the clusters in dendogram
+
+```{r}
+plot(hc1, cex = 0.6)
+rect.hclust(hc1, k = 4, border = 2:5)
+
+```
+
+Using `fviz`:
+
+```{r results='hide'}
+USArrests %>% mutate(cluster=grp)
+```
+
+```{r}
+fviz_cluster(list(data = datas, cluster = grp))
+```
